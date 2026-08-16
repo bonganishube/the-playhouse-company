@@ -1911,7 +1911,13 @@ export const EmailLogScalarFieldEnum = {
   subject: 'subject',
   template: 'template',
   bookingId: 'bookingId',
-  success: 'success',
+  paymentId: 'paymentId',
+  html: 'html',
+  text: 'text',
+  attachments: 'attachments',
+  status: 'status',
+  attempts: 'attempts',
+  lastAttemptAt: 'lastAttemptAt',
   error: 'error',
   createdAt: 'createdAt'
 } as const
@@ -2201,6 +2207,20 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'EmailStatus'
+ */
+export type EnumEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'EmailStatus[]'
+ */
+export type ListEnumEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'EmailStatus[]'>
     
 
 

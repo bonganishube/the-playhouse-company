@@ -14,14 +14,29 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model EmailLog
- * Outbound email log — proof of despatch for confirmations and receipts.
+ * Outbound email log.
+ * 
+ * Proof of despatch for confirmations and receipts, and the retry queue. The
+ * rendered message is stored verbatim rather than regenerated, so the record
+ * shows exactly what the customer was sent even if a template or tariff later
+ * changes, and so a failed message can be retried byte-for-byte.
  */
 export type EmailLogModel = runtime.Types.Result.DefaultSelection<Prisma.$EmailLogPayload>
 
 export type AggregateEmailLog = {
   _count: EmailLogCountAggregateOutputType | null
+  _avg: EmailLogAvgAggregateOutputType | null
+  _sum: EmailLogSumAggregateOutputType | null
   _min: EmailLogMinAggregateOutputType | null
   _max: EmailLogMaxAggregateOutputType | null
+}
+
+export type EmailLogAvgAggregateOutputType = {
+  attempts: number | null
+}
+
+export type EmailLogSumAggregateOutputType = {
+  attempts: number | null
 }
 
 export type EmailLogMinAggregateOutputType = {
@@ -30,7 +45,12 @@ export type EmailLogMinAggregateOutputType = {
   subject: string | null
   template: string | null
   bookingId: string | null
-  success: boolean | null
+  paymentId: string | null
+  html: string | null
+  text: string | null
+  status: $Enums.EmailStatus | null
+  attempts: number | null
+  lastAttemptAt: Date | null
   error: string | null
   createdAt: Date | null
 }
@@ -41,7 +61,12 @@ export type EmailLogMaxAggregateOutputType = {
   subject: string | null
   template: string | null
   bookingId: string | null
-  success: boolean | null
+  paymentId: string | null
+  html: string | null
+  text: string | null
+  status: $Enums.EmailStatus | null
+  attempts: number | null
+  lastAttemptAt: Date | null
   error: string | null
   createdAt: Date | null
 }
@@ -52,12 +77,26 @@ export type EmailLogCountAggregateOutputType = {
   subject: number
   template: number
   bookingId: number
-  success: number
+  paymentId: number
+  html: number
+  text: number
+  attachments: number
+  status: number
+  attempts: number
+  lastAttemptAt: number
   error: number
   createdAt: number
   _all: number
 }
 
+
+export type EmailLogAvgAggregateInputType = {
+  attempts?: true
+}
+
+export type EmailLogSumAggregateInputType = {
+  attempts?: true
+}
 
 export type EmailLogMinAggregateInputType = {
   id?: true
@@ -65,7 +104,12 @@ export type EmailLogMinAggregateInputType = {
   subject?: true
   template?: true
   bookingId?: true
-  success?: true
+  paymentId?: true
+  html?: true
+  text?: true
+  status?: true
+  attempts?: true
+  lastAttemptAt?: true
   error?: true
   createdAt?: true
 }
@@ -76,7 +120,12 @@ export type EmailLogMaxAggregateInputType = {
   subject?: true
   template?: true
   bookingId?: true
-  success?: true
+  paymentId?: true
+  html?: true
+  text?: true
+  status?: true
+  attempts?: true
+  lastAttemptAt?: true
   error?: true
   createdAt?: true
 }
@@ -87,7 +136,13 @@ export type EmailLogCountAggregateInputType = {
   subject?: true
   template?: true
   bookingId?: true
-  success?: true
+  paymentId?: true
+  html?: true
+  text?: true
+  attachments?: true
+  status?: true
+  attempts?: true
+  lastAttemptAt?: true
   error?: true
   createdAt?: true
   _all?: true
@@ -131,6 +186,18 @@ export type EmailLogAggregateArgs<ExtArgs extends runtime.Types.Extensions.Inter
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: EmailLogAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: EmailLogSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: EmailLogMinAggregateInputType
@@ -161,6 +228,8 @@ export type EmailLogGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
   take?: number
   skip?: number
   _count?: EmailLogCountAggregateInputType | true
+  _avg?: EmailLogAvgAggregateInputType
+  _sum?: EmailLogSumAggregateInputType
   _min?: EmailLogMinAggregateInputType
   _max?: EmailLogMaxAggregateInputType
 }
@@ -171,10 +240,18 @@ export type EmailLogGroupByOutputType = {
   subject: string
   template: string
   bookingId: string | null
-  success: boolean
+  paymentId: string | null
+  html: string
+  text: string
+  attachments: runtime.JsonValue | null
+  status: $Enums.EmailStatus
+  attempts: number
+  lastAttemptAt: Date
   error: string | null
   createdAt: Date
   _count: EmailLogCountAggregateOutputType | null
+  _avg: EmailLogAvgAggregateOutputType | null
+  _sum: EmailLogSumAggregateOutputType | null
   _min: EmailLogMinAggregateOutputType | null
   _max: EmailLogMaxAggregateOutputType | null
 }
@@ -203,7 +280,13 @@ export type EmailLogWhereInput = {
   subject?: Prisma.StringFilter<"EmailLog"> | string
   template?: Prisma.StringFilter<"EmailLog"> | string
   bookingId?: Prisma.StringNullableFilter<"EmailLog"> | string | null
-  success?: Prisma.BoolFilter<"EmailLog"> | boolean
+  paymentId?: Prisma.StringNullableFilter<"EmailLog"> | string | null
+  html?: Prisma.StringFilter<"EmailLog"> | string
+  text?: Prisma.StringFilter<"EmailLog"> | string
+  attachments?: Prisma.JsonNullableFilter<"EmailLog">
+  status?: Prisma.EnumEmailStatusFilter<"EmailLog"> | $Enums.EmailStatus
+  attempts?: Prisma.IntFilter<"EmailLog"> | number
+  lastAttemptAt?: Prisma.DateTimeFilter<"EmailLog"> | Date | string
   error?: Prisma.StringNullableFilter<"EmailLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EmailLog"> | Date | string
 }
@@ -214,7 +297,13 @@ export type EmailLogOrderByWithRelationInput = {
   subject?: Prisma.SortOrder
   template?: Prisma.SortOrder
   bookingId?: Prisma.SortOrderInput | Prisma.SortOrder
-  success?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  html?: Prisma.SortOrder
+  text?: Prisma.SortOrder
+  attachments?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
+  attempts?: Prisma.SortOrder
+  lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -228,7 +317,13 @@ export type EmailLogWhereUniqueInput = Prisma.AtLeast<{
   subject?: Prisma.StringFilter<"EmailLog"> | string
   template?: Prisma.StringFilter<"EmailLog"> | string
   bookingId?: Prisma.StringNullableFilter<"EmailLog"> | string | null
-  success?: Prisma.BoolFilter<"EmailLog"> | boolean
+  paymentId?: Prisma.StringNullableFilter<"EmailLog"> | string | null
+  html?: Prisma.StringFilter<"EmailLog"> | string
+  text?: Prisma.StringFilter<"EmailLog"> | string
+  attachments?: Prisma.JsonNullableFilter<"EmailLog">
+  status?: Prisma.EnumEmailStatusFilter<"EmailLog"> | $Enums.EmailStatus
+  attempts?: Prisma.IntFilter<"EmailLog"> | number
+  lastAttemptAt?: Prisma.DateTimeFilter<"EmailLog"> | Date | string
   error?: Prisma.StringNullableFilter<"EmailLog"> | string | null
   createdAt?: Prisma.DateTimeFilter<"EmailLog"> | Date | string
 }, "id">
@@ -239,12 +334,20 @@ export type EmailLogOrderByWithAggregationInput = {
   subject?: Prisma.SortOrder
   template?: Prisma.SortOrder
   bookingId?: Prisma.SortOrderInput | Prisma.SortOrder
-  success?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrderInput | Prisma.SortOrder
+  html?: Prisma.SortOrder
+  text?: Prisma.SortOrder
+  attachments?: Prisma.SortOrderInput | Prisma.SortOrder
+  status?: Prisma.SortOrder
+  attempts?: Prisma.SortOrder
+  lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   _count?: Prisma.EmailLogCountOrderByAggregateInput
+  _avg?: Prisma.EmailLogAvgOrderByAggregateInput
   _max?: Prisma.EmailLogMaxOrderByAggregateInput
   _min?: Prisma.EmailLogMinOrderByAggregateInput
+  _sum?: Prisma.EmailLogSumOrderByAggregateInput
 }
 
 export type EmailLogScalarWhereWithAggregatesInput = {
@@ -256,7 +359,13 @@ export type EmailLogScalarWhereWithAggregatesInput = {
   subject?: Prisma.StringWithAggregatesFilter<"EmailLog"> | string
   template?: Prisma.StringWithAggregatesFilter<"EmailLog"> | string
   bookingId?: Prisma.StringNullableWithAggregatesFilter<"EmailLog"> | string | null
-  success?: Prisma.BoolWithAggregatesFilter<"EmailLog"> | boolean
+  paymentId?: Prisma.StringNullableWithAggregatesFilter<"EmailLog"> | string | null
+  html?: Prisma.StringWithAggregatesFilter<"EmailLog"> | string
+  text?: Prisma.StringWithAggregatesFilter<"EmailLog"> | string
+  attachments?: Prisma.JsonNullableWithAggregatesFilter<"EmailLog">
+  status?: Prisma.EnumEmailStatusWithAggregatesFilter<"EmailLog"> | $Enums.EmailStatus
+  attempts?: Prisma.IntWithAggregatesFilter<"EmailLog"> | number
+  lastAttemptAt?: Prisma.DateTimeWithAggregatesFilter<"EmailLog"> | Date | string
   error?: Prisma.StringNullableWithAggregatesFilter<"EmailLog"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"EmailLog"> | Date | string
 }
@@ -267,7 +376,13 @@ export type EmailLogCreateInput = {
   subject: string
   template: string
   bookingId?: string | null
-  success: boolean
+  paymentId?: string | null
+  html: string
+  text: string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status: $Enums.EmailStatus
+  attempts?: number
+  lastAttemptAt?: Date | string
   error?: string | null
   createdAt?: Date | string
 }
@@ -278,7 +393,13 @@ export type EmailLogUncheckedCreateInput = {
   subject: string
   template: string
   bookingId?: string | null
-  success: boolean
+  paymentId?: string | null
+  html: string
+  text: string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status: $Enums.EmailStatus
+  attempts?: number
+  lastAttemptAt?: Date | string
   error?: string | null
   createdAt?: Date | string
 }
@@ -289,7 +410,13 @@ export type EmailLogUpdateInput = {
   subject?: Prisma.StringFieldUpdateOperationsInput | string
   template?: Prisma.StringFieldUpdateOperationsInput | string
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  success?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  html?: Prisma.StringFieldUpdateOperationsInput | string
+  text?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumEmailStatusFieldUpdateOperationsInput | $Enums.EmailStatus
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lastAttemptAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -300,7 +427,13 @@ export type EmailLogUncheckedUpdateInput = {
   subject?: Prisma.StringFieldUpdateOperationsInput | string
   template?: Prisma.StringFieldUpdateOperationsInput | string
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  success?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  html?: Prisma.StringFieldUpdateOperationsInput | string
+  text?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumEmailStatusFieldUpdateOperationsInput | $Enums.EmailStatus
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lastAttemptAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -311,7 +444,13 @@ export type EmailLogCreateManyInput = {
   subject: string
   template: string
   bookingId?: string | null
-  success: boolean
+  paymentId?: string | null
+  html: string
+  text: string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status: $Enums.EmailStatus
+  attempts?: number
+  lastAttemptAt?: Date | string
   error?: string | null
   createdAt?: Date | string
 }
@@ -322,7 +461,13 @@ export type EmailLogUpdateManyMutationInput = {
   subject?: Prisma.StringFieldUpdateOperationsInput | string
   template?: Prisma.StringFieldUpdateOperationsInput | string
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  success?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  html?: Prisma.StringFieldUpdateOperationsInput | string
+  text?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumEmailStatusFieldUpdateOperationsInput | $Enums.EmailStatus
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lastAttemptAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -333,7 +478,13 @@ export type EmailLogUncheckedUpdateManyInput = {
   subject?: Prisma.StringFieldUpdateOperationsInput | string
   template?: Prisma.StringFieldUpdateOperationsInput | string
   bookingId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  success?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  paymentId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  html?: Prisma.StringFieldUpdateOperationsInput | string
+  text?: Prisma.StringFieldUpdateOperationsInput | string
+  attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  status?: Prisma.EnumEmailStatusFieldUpdateOperationsInput | $Enums.EmailStatus
+  attempts?: Prisma.IntFieldUpdateOperationsInput | number
+  lastAttemptAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -344,9 +495,19 @@ export type EmailLogCountOrderByAggregateInput = {
   subject?: Prisma.SortOrder
   template?: Prisma.SortOrder
   bookingId?: Prisma.SortOrder
-  success?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrder
+  html?: Prisma.SortOrder
+  text?: Prisma.SortOrder
+  attachments?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  attempts?: Prisma.SortOrder
+  lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type EmailLogAvgOrderByAggregateInput = {
+  attempts?: Prisma.SortOrder
 }
 
 export type EmailLogMaxOrderByAggregateInput = {
@@ -355,7 +516,12 @@ export type EmailLogMaxOrderByAggregateInput = {
   subject?: Prisma.SortOrder
   template?: Prisma.SortOrder
   bookingId?: Prisma.SortOrder
-  success?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrder
+  html?: Prisma.SortOrder
+  text?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  attempts?: Prisma.SortOrder
+  lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
 }
@@ -366,9 +532,22 @@ export type EmailLogMinOrderByAggregateInput = {
   subject?: Prisma.SortOrder
   template?: Prisma.SortOrder
   bookingId?: Prisma.SortOrder
-  success?: Prisma.SortOrder
+  paymentId?: Prisma.SortOrder
+  html?: Prisma.SortOrder
+  text?: Prisma.SortOrder
+  status?: Prisma.SortOrder
+  attempts?: Prisma.SortOrder
+  lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+}
+
+export type EmailLogSumOrderByAggregateInput = {
+  attempts?: Prisma.SortOrder
+}
+
+export type EnumEmailStatusFieldUpdateOperationsInput = {
+  set?: $Enums.EmailStatus
 }
 
 
@@ -379,7 +558,13 @@ export type EmailLogSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   subject?: boolean
   template?: boolean
   bookingId?: boolean
-  success?: boolean
+  paymentId?: boolean
+  html?: boolean
+  text?: boolean
+  attachments?: boolean
+  status?: boolean
+  attempts?: boolean
+  lastAttemptAt?: boolean
   error?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["emailLog"]>
@@ -390,7 +575,13 @@ export type EmailLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   subject?: boolean
   template?: boolean
   bookingId?: boolean
-  success?: boolean
+  paymentId?: boolean
+  html?: boolean
+  text?: boolean
+  attachments?: boolean
+  status?: boolean
+  attempts?: boolean
+  lastAttemptAt?: boolean
   error?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["emailLog"]>
@@ -401,7 +592,13 @@ export type EmailLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   subject?: boolean
   template?: boolean
   bookingId?: boolean
-  success?: boolean
+  paymentId?: boolean
+  html?: boolean
+  text?: boolean
+  attachments?: boolean
+  status?: boolean
+  attempts?: boolean
+  lastAttemptAt?: boolean
   error?: boolean
   createdAt?: boolean
 }, ExtArgs["result"]["emailLog"]>
@@ -412,12 +609,18 @@ export type EmailLogSelectScalar = {
   subject?: boolean
   template?: boolean
   bookingId?: boolean
-  success?: boolean
+  paymentId?: boolean
+  html?: boolean
+  text?: boolean
+  attachments?: boolean
+  status?: boolean
+  attempts?: boolean
+  lastAttemptAt?: boolean
   error?: boolean
   createdAt?: boolean
 }
 
-export type EmailLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "to" | "subject" | "template" | "bookingId" | "success" | "error" | "createdAt", ExtArgs["result"]["emailLog"]>
+export type EmailLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "to" | "subject" | "template" | "bookingId" | "paymentId" | "html" | "text" | "attachments" | "status" | "attempts" | "lastAttemptAt" | "error" | "createdAt", ExtArgs["result"]["emailLog"]>
 
 export type $EmailLogPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EmailLog"
@@ -428,7 +631,19 @@ export type $EmailLogPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     subject: string
     template: string
     bookingId: string | null
-    success: boolean
+    paymentId: string | null
+    /**
+     * The message exactly as rendered, retained as evidence and for retries.
+     */
+    html: string
+    text: string
+    /**
+     * Calendar invitations and similar, as [{ filename, content, contentType }].
+     */
+    attachments: runtime.JsonValue | null
+    status: $Enums.EmailStatus
+    attempts: number
+    lastAttemptAt: Date
     error: string | null
     createdAt: Date
   }, ExtArgs["result"]["emailLog"]>
@@ -859,7 +1074,13 @@ export interface EmailLogFieldRefs {
   readonly subject: Prisma.FieldRef<"EmailLog", 'String'>
   readonly template: Prisma.FieldRef<"EmailLog", 'String'>
   readonly bookingId: Prisma.FieldRef<"EmailLog", 'String'>
-  readonly success: Prisma.FieldRef<"EmailLog", 'Boolean'>
+  readonly paymentId: Prisma.FieldRef<"EmailLog", 'String'>
+  readonly html: Prisma.FieldRef<"EmailLog", 'String'>
+  readonly text: Prisma.FieldRef<"EmailLog", 'String'>
+  readonly attachments: Prisma.FieldRef<"EmailLog", 'Json'>
+  readonly status: Prisma.FieldRef<"EmailLog", 'EmailStatus'>
+  readonly attempts: Prisma.FieldRef<"EmailLog", 'Int'>
+  readonly lastAttemptAt: Prisma.FieldRef<"EmailLog", 'DateTime'>
   readonly error: Prisma.FieldRef<"EmailLog", 'String'>
   readonly createdAt: Prisma.FieldRef<"EmailLog", 'DateTime'>
 }

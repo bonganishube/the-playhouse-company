@@ -78,7 +78,7 @@ export type Payment = Prisma.PaymentModel
  * Model PaymentEvent
  * Immutable, append-only record of every gateway interaction. This is the
  * secure audit trail required for transaction reconciliation and dispute
- * resolution — raw payloads are retained verbatim.
+ * resolution, raw payloads are retained verbatim.
  */
 export type PaymentEvent = Prisma.PaymentEventModel
 /**
@@ -105,6 +105,11 @@ export type Setting = Prisma.SettingModel
 export type NewsletterSubscriber = Prisma.NewsletterSubscriberModel
 /**
  * Model EmailLog
- * Outbound email log — proof of despatch for confirmations and receipts.
+ * Outbound email log.
+ * 
+ * Proof of despatch for confirmations and receipts, and the retry queue. The
+ * rendered message is stored verbatim rather than regenerated, so the record
+ * shows exactly what the customer was sent even if a template or tariff later
+ * changes, and so a failed message can be retried byte-for-byte.
  */
 export type EmailLog = Prisma.EmailLogModel

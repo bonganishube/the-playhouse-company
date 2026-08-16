@@ -97,6 +97,7 @@ export default async function EmbedVenuePage({
               hourlyCents: rate ? toCents(rate.amount) : null,
               minBookingMinutes: venue.minBookingMinutes,
               maxAdvanceDays: venue.maxAdvanceDays,
+              minNoticeHours: venue.minNoticeHours,
               currency: "ZAR",
             }}
           />

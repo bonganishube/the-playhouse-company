@@ -3,6 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import { releaseExpiredHolds } from "@/lib/availability";
 import { expireStalePayments, reconcileStalePayments } from "@/lib/booking";
 import { resyncPendingCalendarEvents } from "@/lib/calendar/sync";
+import { retryQueuedEmails } from "@/lib/email/mailer";
 import { env } from "@/lib/env";
 
 /**
@@ -15,6 +16,9 @@ import { env } from "@/lib/env";
  *   3. Cancel bookings that were never paid for within the payment window.
  *   4. Retry Outlook synchronisation for confirmed bookings that have no event,
  *      recovering automatically from a Microsoft Graph outage.
+ *   5. Re-attempt confirmations and receipts that failed to send, including
+ *      any recorded while SMTP was unconfigured, so enabling the mail server
+ *      delivers the backlog rather than losing it.
  *
  * Availability reads also release lapsed holds opportunistically, so a missed
  * run degrades gracefully rather than blocking bookings.
@@ -30,10 +34,11 @@ export async function POST(request: Request) {
   // applied before the expiry sweep could otherwise cancel its booking.
   const paymentsReconciled = await reconcileStalePayments();
 
-  const [holdsReleased, bookingsExpired, calendarsSynced] = await Promise.all([
+  const [holdsReleased, bookingsExpired, calendarsSynced, mail] = await Promise.all([
     releaseExpiredHolds(),
     expireStalePayments(),
     resyncPendingCalendarEvents(),
+    retryQueuedEmails(),
   ]);
 
   return NextResponse.json({
@@ -42,6 +47,8 @@ export async function POST(request: Request) {
     holdsReleased,
     bookingsExpired,
     calendarsSynced,
+    emailsRetried: mail.attempted,
+    emailsSent: mail.sent,
     durationMs: Date.now() - startedAt,
   });
 }

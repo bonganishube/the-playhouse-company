@@ -16,7 +16,7 @@ import type * as Prisma from "../internal/prismaNamespace"
  * Model PaymentEvent
  * Immutable, append-only record of every gateway interaction. This is the
  * secure audit trail required for transaction reconciliation and dispute
- * resolution — raw payloads are retained verbatim.
+ * resolution, raw payloads are retained verbatim.
  */
 export type PaymentEventModel = runtime.Types.Result.DefaultSelection<Prisma.$PaymentEventPayload>
 

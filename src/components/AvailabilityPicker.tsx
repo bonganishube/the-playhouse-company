@@ -41,6 +41,8 @@ export type VenuePricing = {
   hourlyCents: number | null;
   minBookingMinutes: number;
   maxAdvanceDays: number;
+  /** Lead time the venue requires; drives the first selectable date. */
+  minNoticeHours: number;
   currency: string;
 };
 
@@ -58,7 +60,7 @@ export function AvailabilityPicker({
   /** Where to send the customer once a slot is held. Same-origin paths only. */
   returnTo?: string;
 }) {
-  const [date, setDate] = useState(() => defaultDate(pricing.minBookingMinutes));
+  const [date, setDate] = useState(() => firstBookableDate(pricing.minNoticeHours));
   const [day, setDay] = useState<DayAvailability | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -159,7 +161,7 @@ export function AvailabilityPicker({
           <input
             type="date"
             value={date}
-            min={new Date().toISOString().slice(0, 10)}
+            min={firstBookableDate(pricing.minNoticeHours)}
             max={maxDate}
             onChange={(event) => setDate(event.target.value)}
             className="w-full border border-parchment-300 bg-white px-3 py-2 text-sm sm:w-56"
@@ -331,7 +333,22 @@ function formatZar(cents: number): string {
   }).format(cents / 100);
 }
 
-/** Default to tomorrow, which clears the common 24-hour notice requirement. */
-function defaultDate(_minBookingMinutes: number): string {
-  return new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+/**
+ * The first date the venue can actually be booked on.
+ *
+ * Opening on tomorrow regardless of the notice period meant a customer landed
+ * on a day where most or all slots were already past the cut-off: on a venue
+ * requiring a week's notice, every slot shown was unbookable. Starting at the
+ * first viable date shows real availability immediately.
+ */
+function firstBookableDate(minNoticeHours: number): string {
+  const earliest = new Date(Date.now() + minNoticeHours * 3_600_000);
+  // Any slot on that calendar day before the cut-off is still blocked, so move
+  // to the next whole day unless the cut-off falls exactly at midnight.
+  if (earliest.getHours() !== 0 || earliest.getMinutes() !== 0) {
+    earliest.setDate(earliest.getDate() + 1);
+  }
+  earliest.setHours(0, 0, 0, 0);
+  const offsetMs = earliest.getTimezoneOffset() * 60_000;
+  return new Date(earliest.getTime() - offsetMs).toISOString().slice(0, 10);
 }

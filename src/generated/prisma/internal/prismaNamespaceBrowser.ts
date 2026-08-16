@@ -341,7 +341,13 @@ export const EmailLogScalarFieldEnum = {
   subject: 'subject',
   template: 'template',
   bookingId: 'bookingId',
-  success: 'success',
+  paymentId: 'paymentId',
+  html: 'html',
+  text: 'text',
+  attachments: 'attachments',
+  status: 'status',
+  attempts: 'attempts',
+  lastAttemptAt: 'lastAttemptAt',
   error: 'error',
   createdAt: 'createdAt'
 } as const

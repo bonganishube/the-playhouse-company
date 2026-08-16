@@ -119,3 +119,13 @@ export const PaymentPolicy = {
 } as const
 
 export type PaymentPolicy = (typeof PaymentPolicy)[keyof typeof PaymentPolicy]
+
+
+export const EmailStatus = {
+  SENT: 'SENT',
+  QUEUED: 'QUEUED',
+  FAILED: 'FAILED',
+  NOT_CONFIGURED: 'NOT_CONFIGURED'
+} as const
+
+export type EmailStatus = (typeof EmailStatus)[keyof typeof EmailStatus]

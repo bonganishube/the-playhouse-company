@@ -122,6 +122,7 @@ export async function sendPaymentReceiptEmail(paymentId: string) {
     text: message.text,
     template: "payment-receipt",
     bookingId: payment.bookingId,
+    paymentId: payment.id,
   });
 }
 

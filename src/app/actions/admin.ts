@@ -19,6 +19,7 @@ import {
   requestBalanceSettlement,
 } from "@/lib/booking";
 import { requireCapability, venueScopeFor, hashPassword } from "@/lib/auth";
+import { resendEmail } from "@/lib/email/mailer";
 import { toCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { clockToMinutes } from "@/lib/time";
@@ -157,6 +158,49 @@ export async function requestBalanceAction(
     await requestBalanceSettlement(bookingId);
     revalidatePath(`/admin/bookings/${bookingId}`);
     return { ok: true, message: "Full balance is now due on this booking." };
+  } catch (error) {
+    return { ok: false, message: errorMessage(error) };
+  }
+}
+
+/**
+ * Send a confirmation, receipt or notice again.
+ *
+ * Re-sends the stored message rather than regenerating it, so the customer
+ * receives exactly what was originally produced even if a tariff or template
+ * has since changed.
+ */
+export async function resendEmailAction(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  try {
+    const actor = await requireCapability("bookings.view");
+    const logId = String(formData.get("logId") ?? "");
+    const result = await resendEmail(logId);
+
+    await recordAudit({
+      actor,
+      action: "email.resent",
+      entityType: "EmailLog",
+      entityId: logId,
+      metadata: { status: result.status },
+    });
+
+    const bookingId = String(formData.get("bookingId") ?? "");
+    if (bookingId) revalidatePath(`/admin/bookings/${bookingId}`);
+
+    if (result.status === "SENT") {
+      return { ok: true, message: "Message sent." };
+    }
+    if (result.status === "NOT_CONFIGURED") {
+      return {
+        ok: false,
+        message:
+          "No mail server is configured, so the message was recorded but not delivered.",
+      };
+    }
+    return { ok: false, message: result.error ?? "Delivery failed." };
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }

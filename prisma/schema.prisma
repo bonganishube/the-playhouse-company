@@ -499,17 +499,46 @@ model NewsletterSubscriber {
   @@map("newsletter_subscribers")
 }
 
-/// Outbound email log, proof of despatch for confirmations and receipts.
+/// Delivery state of an outbound message.
+enum EmailStatus {
+  /// Accepted by the mail server.
+  SENT
+  /// Delivery failed and the message is awaiting another attempt.
+  QUEUED
+  /// Retries exhausted; needs a human.
+  FAILED
+  /// No SMTP configured. Rendered and recorded, but NOT delivered.
+  NOT_CONFIGURED
+}
+
+/// Outbound email log.
+///
+/// Proof of despatch for confirmations and receipts, and the retry queue. The
+/// rendered message is stored verbatim rather than regenerated, so the record
+/// shows exactly what the customer was sent even if a template or tariff later
+/// changes, and so a failed message can be retried byte-for-byte.
 model EmailLog {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   to        String
   subject   String
   template  String
   bookingId String?
-  success   Boolean
-  error     String?
+  paymentId String?
+
+  /// The message exactly as rendered, retained as evidence and for retries.
+  html        String @db.Text
+  text        String @db.Text
+  /// Calendar invitations and similar, as [{ filename, content, contentType }].
+  attachments Json?
+
+  status        EmailStatus
+  attempts      Int         @default(1)
+  lastAttemptAt DateTime    @default(now())
+  error         String?
+
   createdAt DateTime @default(now())
 
   @@index([bookingId])
+  @@index([status, attempts])
   @@map("email_logs")
 }
