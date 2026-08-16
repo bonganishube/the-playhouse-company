@@ -16,10 +16,12 @@ import {
  * recording studio an hourly rate only. That distinction is commercial, not
  * incidental, so it is modelled explicitly via `rateBasis`.
  *
- * OUTSTANDING: capacities, descriptions and photography are placeholders
- * pending approved copy from The Playhouse Company. Every field marked
- * `capacity: null` and every description ending "Details to be confirmed."
- * requires sign-off before go-live.
+ * OUTSTANDING: descriptions and most photography are still placeholders
+ * pending approved copy from The Playhouse Company. The three theatres carry
+ * supplied photographs; every other venue uses a drawn placeholder from
+ * scripts/generate-venue-images.mjs. Every field marked `capacity: null` and
+ * every description ending "Details to be confirmed." requires sign-off
+ * before go-live.
  */
 
 const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
@@ -76,7 +78,7 @@ export const VENUES: VenueSeed[] = [
     openDays: ALL_DAYS,
     opensAt: 8 * 60,
     closesAt: 23 * 60,
-    image: "/venues/opera-theatre.svg",
+    image: "/venue-pic5.png",
   },
   {
     slug: "drama-theatre",
@@ -100,7 +102,7 @@ export const VENUES: VenueSeed[] = [
     openDays: ALL_DAYS,
     opensAt: 8 * 60,
     closesAt: 23 * 60,
-    image: "/venues/drama-theatre.svg",
+    image: "/venue-pic1.png",
   },
   {
     slug: "loft-theatre",
@@ -124,7 +126,7 @@ export const VENUES: VenueSeed[] = [
     openDays: ALL_DAYS,
     opensAt: 8 * 60,
     closesAt: 22 * 60,
-    image: "/venues/loft-theatre.svg",
+    image: "/venue-pic2.png",
   },
 
   // -------------------------------------------------------- Function venues
