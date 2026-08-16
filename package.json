@@ -11,7 +11,8 @@
     "db:seed": "prisma db seed",
     "db:migrate": "prisma migrate dev",
     "verify:mail": "tsx scripts/verify-mail.mts none && SMTP_HOST=127.0.0.1 SMTP_PORT=2525 tsx scripts/verify-mail.mts live && SMTP_HOST=127.0.0.1 SMTP_PORT=1 tsx scripts/verify-mail.mts unreachable",
-    "mail:test": "tsx scripts/mail-test.mts"
+    "mail:test": "tsx scripts/mail-test.mts",
+    "demo:booking": "tsx scripts/demo-booking.mts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
