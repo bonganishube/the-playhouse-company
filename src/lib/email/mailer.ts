@@ -14,10 +14,11 @@ import { prisma } from "../prisma";
  *
  * Delivery outcomes are recorded honestly:
  *
- *   SENT            accepted by the mail server
+ *   SENT            accepted by the mail server, on its way to the recipient
+ *   PREVIEW         delivered to a preview inbox, NOT to the recipient
  *   QUEUED          delivery failed, awaiting another attempt
  *   FAILED          retries exhausted, needs a human
- *   NOT_CONFIGURED  no SMTP set; rendered and recorded but NOT delivered
+ *   NOT_CONFIGURED  no transport set; rendered and recorded but NOT delivered
  *
  * The last of those matters. Reporting success when nothing was sent would
  * make a silent misconfiguration look like a working system, and nobody would
@@ -28,10 +29,51 @@ import { prisma } from "../prisma";
 export const MAX_DELIVERY_ATTEMPTS = 5;
 
 let transporter: Transporter | null = null;
+/** Set when the active transport delivers to a preview inbox, not a customer. */
+let isPreviewTransport = false;
 
-function getTransport(): Transporter | null {
-  if (!env.SMTP_HOST) return null;
+/**
+ * Resolve the mail transport.
+ *
+ * The `ethereal` option provisions a throwaway inbox with no account, no
+ * credentials and no cost. Messages are readable at a link but never reach the
+ * real recipient, which is precisely what makes it safe to run against live
+ * booking data before a production provider exists. Pin ETHEREAL_USER and
+ * ETHEREAL_PASSWORD to keep one inbox across restarts.
+ */
+async function getTransport(): Promise<Transporter | null> {
   if (transporter) return transporter;
+
+  if (env.MAIL_TRANSPORT === "none") return null;
+
+  if (env.MAIL_TRANSPORT === "ethereal") {
+    const account =
+      env.ETHEREAL_USER && env.ETHEREAL_PASSWORD
+        ? { user: env.ETHEREAL_USER, pass: env.ETHEREAL_PASSWORD }
+        : await nodemailer.createTestAccount().then((a) => ({
+            user: a.user,
+            pass: a.pass,
+          }));
+
+    transporter = nodemailer.createTransport({
+      host: "smtp.ethereal.email",
+      port: 587,
+      secure: false,
+      auth: account,
+    });
+    isPreviewTransport = true;
+
+    if (!env.ETHEREAL_USER) {
+      console.info(
+        `[mail] preview inbox provisioned. Pin it across restarts with:\n` +
+          `       ETHEREAL_USER="${account.user}"\n` +
+          `       ETHEREAL_PASSWORD="${account.pass}"`,
+      );
+    }
+    return transporter;
+  }
+
+  if (!env.SMTP_HOST) return null;
 
   transporter = nodemailer.createTransport({
     host: env.SMTP_HOST,
@@ -41,6 +83,7 @@ function getTransport(): Transporter | null {
       ? { user: env.SMTP_USER, pass: env.SMTP_PASSWORD }
       : undefined,
   });
+  isPreviewTransport = false;
   return transporter;
 }
 
@@ -62,7 +105,13 @@ export type MailInput = {
   attachments?: Attachment[];
 };
 
-export type MailResult = { status: EmailStatus; logId: string; error?: string };
+export type MailResult = {
+  status: EmailStatus;
+  logId: string;
+  error?: string;
+  /** Where a preview-inbox message can be read. */
+  previewUrl?: string;
+};
 
 /** Hand a rendered message to the mail server, recording the outcome. */
 export async function sendMail(input: MailInput): Promise<MailResult> {
@@ -92,37 +141,62 @@ export async function sendMail(input: MailInput): Promise<MailResult> {
  */
 export async function attemptDelivery(logId: string): Promise<MailResult> {
   const log = await prisma.emailLog.findUniqueOrThrow({ where: { id: logId } });
-  const transport = getTransport();
+  const transport = await getTransport();
 
   if (!transport) {
     console.info(
-      `[mail] SMTP not configured. "${log.subject}" to ${log.to} recorded but not delivered.`,
+      `[mail] No transport configured. "${log.subject}" to ${log.to} recorded but not delivered.`,
     );
     await prisma.emailLog.update({
       where: { id: logId },
       data: {
         status: EmailStatus.NOT_CONFIGURED,
         lastAttemptAt: new Date(),
-        error: "SMTP is not configured; the message was recorded but not sent.",
+        error:
+          "No mail transport is configured; the message was recorded but not sent.",
       },
     });
     return { status: EmailStatus.NOT_CONFIGURED, logId };
   }
 
+  // While testing against real credentials, every message is diverted to one
+  // address so a live confirmation cannot reach an actual customer by mistake.
+  // The log keeps the true intended recipient, and the diverted copy says who
+  // it was meant for, so the record stays honest either way.
+  const redirected = Boolean(env.MAIL_REDIRECT_TO);
+  const recipient = redirected ? env.MAIL_REDIRECT_TO : log.to;
+  const notice = redirected
+    ? `Intended for ${log.to}. Diverted here because MAIL_REDIRECT_TO is set.`
+    : "";
+
   try {
-    await transport.sendMail({
+    const info = await transport.sendMail({
       from: env.MAIL_FROM,
-      to: log.to,
-      subject: log.subject,
-      text: log.text,
-      html: log.html,
+      to: recipient,
+      subject: redirected ? `[to: ${log.to}] ${log.subject}` : log.subject,
+      text: redirected ? `${notice}\n\n---\n\n${log.text}` : log.text,
+      html: redirected
+        ? `<p style="background:#fff4d6;border-left:4px solid #d6a95f;padding:10px 14px;font:14px system-ui;margin:0 0 16px">${notice}</p>${log.html}`
+        : log.html,
       attachments: (log.attachments as Attachment[] | null) ?? undefined,
     });
+
+    // A preview inbox is recorded as PREVIEW, never SENT. The message left the
+    // application but the customer did not receive it, and reporting otherwise
+    // would hide exactly the thing someone checking needs to know.
+    // Diverted mail reached a mailbox, but not the customer's, so it is
+    // recorded as PREVIEW rather than SENT for the same reason.
+    const status =
+      isPreviewTransport || redirected ? EmailStatus.PREVIEW : EmailStatus.SENT;
+    const previewUrl = isPreviewTransport
+      ? nodemailer.getTestMessageUrl(info) || null
+      : null;
+
     await prisma.emailLog.update({
       where: { id: logId },
-      data: { status: EmailStatus.SENT, lastAttemptAt: new Date(), error: null },
+      data: { status, previewUrl, lastAttemptAt: new Date(), error: null },
     });
-    return { status: EmailStatus.SENT, logId };
+    return { status, logId, previewUrl: previewUrl ?? undefined };
   } catch (cause) {
     const error = cause instanceof Error ? cause.message : String(cause);
     const attempts = log.attempts;
@@ -152,7 +226,11 @@ export async function retryQueuedEmails(limit = 50): Promise<{
   attempted: number;
   sent: number;
 }> {
-  if (!env.SMTP_HOST) return { attempted: 0, sent: 0 };
+  // Nothing to retry against when messages are only being recorded.
+  if (env.MAIL_TRANSPORT === "none") return { attempted: 0, sent: 0 };
+  if (env.MAIL_TRANSPORT !== "ethereal" && !env.SMTP_HOST) {
+    return { attempted: 0, sent: 0 };
+  }
 
   const pending = await prisma.emailLog.findMany({
     where: {
@@ -171,7 +249,9 @@ export async function retryQueuedEmails(limit = 50): Promise<{
       data: { attempts: { increment: 1 } },
     });
     const result = await attemptDelivery(row.id);
-    if (result.status === EmailStatus.SENT) sent += 1;
+    if (result.status === EmailStatus.SENT || result.status === EmailStatus.PREVIEW) {
+      sent += 1;
+    }
   }
 
   return { attempted: pending.length, sent };

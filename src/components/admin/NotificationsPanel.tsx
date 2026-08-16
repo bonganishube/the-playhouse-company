@@ -15,10 +15,12 @@ export type EmailRow = {
   attempts: number;
   sentAt: string;
   error: string | null;
+  previewUrl: string | null;
 };
 
 const STATUS_STYLE: Record<string, string> = {
   SENT: "bg-green-100 text-green-900 border-green-300",
+  PREVIEW: "bg-blue-100 text-blue-900 border-blue-300",
   QUEUED: "bg-amber-100 text-amber-900 border-amber-300",
   FAILED: "bg-red-100 text-red-900 border-red-300",
   NOT_CONFIGURED: "bg-parchment-200 text-ink-700 border-parchment-400",
@@ -26,6 +28,7 @@ const STATUS_STYLE: Record<string, string> = {
 
 const STATUS_LABEL: Record<string, string> = {
   SENT: "Sent",
+  PREVIEW: "Preview only",
   QUEUED: "Awaiting retry",
   FAILED: "Failed",
   NOT_CONFIGURED: "Not delivered",
@@ -39,11 +42,11 @@ const STATUS_LABEL: Record<string, string> = {
 export function NotificationsPanel({
   bookingId,
   emails,
-  smtpConfigured,
+  deliversToRecipients,
 }: {
   bookingId: string;
   emails: EmailRow[];
-  smtpConfigured: boolean;
+  deliversToRecipients: boolean;
 }) {
   const [state, action, pending] = useActionState(resendEmailAction, initial);
 
@@ -53,11 +56,13 @@ export function NotificationsPanel({
         Correspondence
       </h2>
 
-      {!smtpConfigured && (
+      {!deliversToRecipients && (
         <div className="px-5 pt-4">
-          <Alert tone="warning" title="No mail server configured">
-            Messages below were generated and recorded but not delivered. They
-            will be sent automatically once SMTP credentials are set.
+          <Alert tone="warning" title="Messages are not reaching customers">
+            No production mail provider is configured. Messages are recorded,
+            and where a preview inbox is in use they can be read via the link
+            below, but customers do not receive them. Configure SMTP and the
+            backlog is delivered on the next maintenance sweep.
           </Alert>
         </div>
       )}
@@ -80,6 +85,26 @@ export function NotificationsPanel({
                   {email.error && (
                     <p className="mt-0.5 text-xs text-red-700">{email.error}</p>
                   )}
+                  <p className="mt-1 flex gap-3 text-xs">
+                    <a
+                      href={`/admin/emails/${email.id}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="text-brand-600 underline"
+                    >
+                      View message
+                    </a>
+                    {email.previewUrl && (
+                      <a
+                        href={email.previewUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-brand-600 underline"
+                      >
+                        Open in preview inbox
+                      </a>
+                    )}
+                  </p>
                 </div>
 
                 <div className="flex shrink-0 items-center gap-2">

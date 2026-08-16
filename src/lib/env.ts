@@ -55,6 +55,28 @@ const schema = z.object({
     .default("false")
     .transform((v) => v === "true"),
 
+  /**
+   * How outbound mail is delivered.
+   *
+   *   auto      SMTP when SMTP_HOST is set, otherwise recorded only
+   *   ethereal  a throwaway preview inbox, requiring no account. Messages are
+   *             readable at a link but never reach the real recipient, which
+   *             is what makes it safe before go-live
+   *   none      recorded only, never delivered
+   */
+  MAIL_TRANSPORT: z.enum(["auto", "ethereal", "none"]).default("auto"),
+  /** Pin a preview inbox so messages persist across restarts. Optional. */
+  ETHEREAL_USER: z.string().default(""),
+  ETHEREAL_PASSWORD: z.string().default(""),
+
+  /**
+   * Divert every outbound message to this address instead of the real
+   * recipient. Set it while testing against real credentials so a live
+   * confirmation cannot reach an actual customer by accident. Leave empty in
+   * production.
+   */
+  MAIL_REDIRECT_TO: z.string().default(""),
+
   SMTP_HOST: z.string().default(""),
   SMTP_PORT: z.coerce.number().int().default(587),
   SMTP_USER: z.string().default(""),
@@ -85,6 +107,17 @@ export function embedAllowedOrigins(): string[] {
   return env.EMBED_ALLOWED_ORIGINS.split(",")
     .map((s) => s.trim())
     .filter(Boolean);
+}
+
+/** True when messages leave the application, to a real or preview inbox. */
+export function mailConfigured(): boolean {
+  return env.MAIL_TRANSPORT === "ethereal" || Boolean(env.SMTP_HOST);
+}
+
+/** True when messages reach real recipients rather than a preview inbox. */
+export function mailDeliversToRecipients(): boolean {
+  if (env.MAIL_REDIRECT_TO) return false;
+  return env.MAIL_TRANSPORT !== "ethereal" && Boolean(env.SMTP_HOST);
 }
 
 /** True when real Outlook synchronisation can be attempted. */

@@ -509,6 +509,10 @@ enum EmailStatus {
   FAILED
   /// No SMTP configured. Rendered and recorded, but NOT delivered.
   NOT_CONFIGURED
+  /// Delivered to a preview inbox, not to the real recipient. Used before a
+  /// production mail provider exists, so the message can be read and approved
+  /// without pretending the customer received it.
+  PREVIEW
 }
 
 /// Outbound email log.
@@ -532,6 +536,8 @@ model EmailLog {
   attachments Json?
 
   status        EmailStatus
+  /// Where the message can be read when it went to a preview inbox.
+  previewUrl    String?
   attempts      Int         @default(1)
   lastAttemptAt DateTime    @default(now())
   error         String?

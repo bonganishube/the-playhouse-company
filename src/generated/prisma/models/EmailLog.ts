@@ -49,6 +49,7 @@ export type EmailLogMinAggregateOutputType = {
   html: string | null
   text: string | null
   status: $Enums.EmailStatus | null
+  previewUrl: string | null
   attempts: number | null
   lastAttemptAt: Date | null
   error: string | null
@@ -65,6 +66,7 @@ export type EmailLogMaxAggregateOutputType = {
   html: string | null
   text: string | null
   status: $Enums.EmailStatus | null
+  previewUrl: string | null
   attempts: number | null
   lastAttemptAt: Date | null
   error: string | null
@@ -82,6 +84,7 @@ export type EmailLogCountAggregateOutputType = {
   text: number
   attachments: number
   status: number
+  previewUrl: number
   attempts: number
   lastAttemptAt: number
   error: number
@@ -108,6 +111,7 @@ export type EmailLogMinAggregateInputType = {
   html?: true
   text?: true
   status?: true
+  previewUrl?: true
   attempts?: true
   lastAttemptAt?: true
   error?: true
@@ -124,6 +128,7 @@ export type EmailLogMaxAggregateInputType = {
   html?: true
   text?: true
   status?: true
+  previewUrl?: true
   attempts?: true
   lastAttemptAt?: true
   error?: true
@@ -141,6 +146,7 @@ export type EmailLogCountAggregateInputType = {
   text?: true
   attachments?: true
   status?: true
+  previewUrl?: true
   attempts?: true
   lastAttemptAt?: true
   error?: true
@@ -245,6 +251,7 @@ export type EmailLogGroupByOutputType = {
   text: string
   attachments: runtime.JsonValue | null
   status: $Enums.EmailStatus
+  previewUrl: string | null
   attempts: number
   lastAttemptAt: Date
   error: string | null
@@ -285,6 +292,7 @@ export type EmailLogWhereInput = {
   text?: Prisma.StringFilter<"EmailLog"> | string
   attachments?: Prisma.JsonNullableFilter<"EmailLog">
   status?: Prisma.EnumEmailStatusFilter<"EmailLog"> | $Enums.EmailStatus
+  previewUrl?: Prisma.StringNullableFilter<"EmailLog"> | string | null
   attempts?: Prisma.IntFilter<"EmailLog"> | number
   lastAttemptAt?: Prisma.DateTimeFilter<"EmailLog"> | Date | string
   error?: Prisma.StringNullableFilter<"EmailLog"> | string | null
@@ -302,6 +310,7 @@ export type EmailLogOrderByWithRelationInput = {
   text?: Prisma.SortOrder
   attachments?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  previewUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   attempts?: Prisma.SortOrder
   lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -322,6 +331,7 @@ export type EmailLogWhereUniqueInput = Prisma.AtLeast<{
   text?: Prisma.StringFilter<"EmailLog"> | string
   attachments?: Prisma.JsonNullableFilter<"EmailLog">
   status?: Prisma.EnumEmailStatusFilter<"EmailLog"> | $Enums.EmailStatus
+  previewUrl?: Prisma.StringNullableFilter<"EmailLog"> | string | null
   attempts?: Prisma.IntFilter<"EmailLog"> | number
   lastAttemptAt?: Prisma.DateTimeFilter<"EmailLog"> | Date | string
   error?: Prisma.StringNullableFilter<"EmailLog"> | string | null
@@ -339,6 +349,7 @@ export type EmailLogOrderByWithAggregationInput = {
   text?: Prisma.SortOrder
   attachments?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
+  previewUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   attempts?: Prisma.SortOrder
   lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -364,6 +375,7 @@ export type EmailLogScalarWhereWithAggregatesInput = {
   text?: Prisma.StringWithAggregatesFilter<"EmailLog"> | string
   attachments?: Prisma.JsonNullableWithAggregatesFilter<"EmailLog">
   status?: Prisma.EnumEmailStatusWithAggregatesFilter<"EmailLog"> | $Enums.EmailStatus
+  previewUrl?: Prisma.StringNullableWithAggregatesFilter<"EmailLog"> | string | null
   attempts?: Prisma.IntWithAggregatesFilter<"EmailLog"> | number
   lastAttemptAt?: Prisma.DateTimeWithAggregatesFilter<"EmailLog"> | Date | string
   error?: Prisma.StringNullableWithAggregatesFilter<"EmailLog"> | string | null
@@ -381,6 +393,7 @@ export type EmailLogCreateInput = {
   text: string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: $Enums.EmailStatus
+  previewUrl?: string | null
   attempts?: number
   lastAttemptAt?: Date | string
   error?: string | null
@@ -398,6 +411,7 @@ export type EmailLogUncheckedCreateInput = {
   text: string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: $Enums.EmailStatus
+  previewUrl?: string | null
   attempts?: number
   lastAttemptAt?: Date | string
   error?: string | null
@@ -415,6 +429,7 @@ export type EmailLogUpdateInput = {
   text?: Prisma.StringFieldUpdateOperationsInput | string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumEmailStatusFieldUpdateOperationsInput | $Enums.EmailStatus
+  previewUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   lastAttemptAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -432,6 +447,7 @@ export type EmailLogUncheckedUpdateInput = {
   text?: Prisma.StringFieldUpdateOperationsInput | string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumEmailStatusFieldUpdateOperationsInput | $Enums.EmailStatus
+  previewUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   lastAttemptAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -449,6 +465,7 @@ export type EmailLogCreateManyInput = {
   text: string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status: $Enums.EmailStatus
+  previewUrl?: string | null
   attempts?: number
   lastAttemptAt?: Date | string
   error?: string | null
@@ -466,6 +483,7 @@ export type EmailLogUpdateManyMutationInput = {
   text?: Prisma.StringFieldUpdateOperationsInput | string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumEmailStatusFieldUpdateOperationsInput | $Enums.EmailStatus
+  previewUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   lastAttemptAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -483,6 +501,7 @@ export type EmailLogUncheckedUpdateManyInput = {
   text?: Prisma.StringFieldUpdateOperationsInput | string
   attachments?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   status?: Prisma.EnumEmailStatusFieldUpdateOperationsInput | $Enums.EmailStatus
+  previewUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
   lastAttemptAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   error?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -500,6 +519,7 @@ export type EmailLogCountOrderByAggregateInput = {
   text?: Prisma.SortOrder
   attachments?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  previewUrl?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
   lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrder
@@ -520,6 +540,7 @@ export type EmailLogMaxOrderByAggregateInput = {
   html?: Prisma.SortOrder
   text?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  previewUrl?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
   lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrder
@@ -536,6 +557,7 @@ export type EmailLogMinOrderByAggregateInput = {
   html?: Prisma.SortOrder
   text?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  previewUrl?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
   lastAttemptAt?: Prisma.SortOrder
   error?: Prisma.SortOrder
@@ -563,6 +585,7 @@ export type EmailLogSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   text?: boolean
   attachments?: boolean
   status?: boolean
+  previewUrl?: boolean
   attempts?: boolean
   lastAttemptAt?: boolean
   error?: boolean
@@ -580,6 +603,7 @@ export type EmailLogSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   text?: boolean
   attachments?: boolean
   status?: boolean
+  previewUrl?: boolean
   attempts?: boolean
   lastAttemptAt?: boolean
   error?: boolean
@@ -597,6 +621,7 @@ export type EmailLogSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   text?: boolean
   attachments?: boolean
   status?: boolean
+  previewUrl?: boolean
   attempts?: boolean
   lastAttemptAt?: boolean
   error?: boolean
@@ -614,13 +639,14 @@ export type EmailLogSelectScalar = {
   text?: boolean
   attachments?: boolean
   status?: boolean
+  previewUrl?: boolean
   attempts?: boolean
   lastAttemptAt?: boolean
   error?: boolean
   createdAt?: boolean
 }
 
-export type EmailLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "to" | "subject" | "template" | "bookingId" | "paymentId" | "html" | "text" | "attachments" | "status" | "attempts" | "lastAttemptAt" | "error" | "createdAt", ExtArgs["result"]["emailLog"]>
+export type EmailLogOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "to" | "subject" | "template" | "bookingId" | "paymentId" | "html" | "text" | "attachments" | "status" | "previewUrl" | "attempts" | "lastAttemptAt" | "error" | "createdAt", ExtArgs["result"]["emailLog"]>
 
 export type $EmailLogPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "EmailLog"
@@ -642,6 +668,10 @@ export type $EmailLogPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
      */
     attachments: runtime.JsonValue | null
     status: $Enums.EmailStatus
+    /**
+     * Where the message can be read when it went to a preview inbox.
+     */
+    previewUrl: string | null
     attempts: number
     lastAttemptAt: Date
     error: string | null
@@ -1079,6 +1109,7 @@ export interface EmailLogFieldRefs {
   readonly text: Prisma.FieldRef<"EmailLog", 'String'>
   readonly attachments: Prisma.FieldRef<"EmailLog", 'Json'>
   readonly status: Prisma.FieldRef<"EmailLog", 'EmailStatus'>
+  readonly previewUrl: Prisma.FieldRef<"EmailLog", 'String'>
   readonly attempts: Prisma.FieldRef<"EmailLog", 'Int'>
   readonly lastAttemptAt: Prisma.FieldRef<"EmailLog", 'DateTime'>
   readonly error: Prisma.FieldRef<"EmailLog", 'String'>

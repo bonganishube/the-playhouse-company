@@ -346,6 +346,7 @@ export const EmailLogScalarFieldEnum = {
   text: 'text',
   attachments: 'attachments',
   status: 'status',
+  previewUrl: 'previewUrl',
   attempts: 'attempts',
   lastAttemptAt: 'lastAttemptAt',
   error: 'error',

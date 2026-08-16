@@ -125,7 +125,8 @@ export const EmailStatus = {
   SENT: 'SENT',
   QUEUED: 'QUEUED',
   FAILED: 'FAILED',
-  NOT_CONFIGURED: 'NOT_CONFIGURED'
+  NOT_CONFIGURED: 'NOT_CONFIGURED',
+  PREVIEW: 'PREVIEW'
 } as const
 
 export type EmailStatus = (typeof EmailStatus)[keyof typeof EmailStatus]

@@ -9,7 +9,9 @@
     "lint": "eslint",
     "verify": "tsx scripts/verify-flow.mts",
     "db:seed": "prisma db seed",
-    "db:migrate": "prisma migrate dev"
+    "db:migrate": "prisma migrate dev",
+    "verify:mail": "tsx scripts/verify-mail.mts none && SMTP_HOST=127.0.0.1 SMTP_PORT=2525 tsx scripts/verify-mail.mts live && SMTP_HOST=127.0.0.1 SMTP_PORT=1 tsx scripts/verify-mail.mts unreachable",
+    "mail:test": "tsx scripts/mail-test.mts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
@@ -35,10 +37,12 @@
     "@types/pg": "^8.21.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/smtp-server": "^3.5.13",
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "prisma": "^7.9.1",
     "puppeteer-core": "^25.7.0",
+    "smtp-server": "^3.19.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5"

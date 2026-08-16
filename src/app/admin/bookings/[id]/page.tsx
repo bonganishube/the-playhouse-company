@@ -5,8 +5,10 @@ import {
   CancelPanel,
   PaymentPanel,
 } from "@/components/admin/BookingActions";
+import { NotificationsPanel } from "@/components/admin/NotificationsPanel";
 import { Card, DetailRow, StatusBadge } from "@/components/ui";
 import { can, requireCapability, venueScopeFor } from "@/lib/auth";
+import { mailDeliversToRecipients } from "@/lib/env";
 import { formatCents, toCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, formatRange } from "@/lib/time";
@@ -48,6 +50,11 @@ export default async function AdminBookingDetail({
   if (scope && !booking.reservations.every((r) => scope.includes(r.venueId))) {
     notFound();
   }
+
+  const emails = await prisma.emailLog.findMany({
+    where: { bookingId: booking.id },
+    orderBy: { createdAt: "desc" },
+  });
 
   const auditTrail = await prisma.auditLog.findMany({
     where: { entityType: "Booking", entityId: booking.id },
@@ -192,6 +199,22 @@ export default async function AdminBookingDetail({
               </ul>
             )}
           </Card>
+
+          <NotificationsPanel
+            bookingId={booking.id}
+            deliversToRecipients={mailDeliversToRecipients()}
+            emails={emails.map((e) => ({
+              id: e.id,
+              template: e.template,
+              to: e.to,
+              subject: e.subject,
+              status: e.status,
+              attempts: e.attempts,
+              sentAt: formatDateTime(e.lastAttemptAt),
+              error: e.error,
+              previewUrl: e.previewUrl,
+            }))}
+          />
 
           {auditTrail.length > 0 && (
             <Card>
