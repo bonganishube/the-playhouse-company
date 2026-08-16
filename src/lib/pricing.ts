@@ -18,7 +18,7 @@ export type Quote = {
   rateLabel: string;
   /** Unit price in cents (per hour or per day). */
   rateCents: number;
-  /** Number of units charged — hours (2dp) or whole days. */
+  /** Number of units charged, hours (2dp) or whole days. */
   quantity: number;
   /** quantity x rateCents, in cents. */
   lineTotalCents: number;
@@ -50,11 +50,11 @@ export function findRate(
  * The venue's `rateBasis` decides how it is sold, reflecting The Playhouse
  * Company's fixed tariff:
  *
- *   DAILY  — theatres and function venues. A fixed charge per calendar day,
+ *   DAILY. Theatres and function venues. A fixed charge per calendar day,
  *            regardless of how much of the day is used. One day of the Opera
  *            Theatre costs the day rate whether the hirer needs four hours or
  *            fourteen.
- *   HOURLY — rehearsal rooms and the recording studio, billed to two decimal
+ *   HOURLY. Rehearsal rooms and the recording studio, billed to two decimal
  *            places so a 90-minute session is 1.5 hours.
  *
  * All rates are VAT-inclusive; the VAT portion is extracted at booking level,

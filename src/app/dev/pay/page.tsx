@@ -8,8 +8,8 @@ export const metadata = { title: "Simulated payment" };
 /**
  * Stand-in for a hosted payment page, used only while PAYMENT_GATEWAY=MOCK.
  *
- * It lets the full booking lifecycle — checkout, callback, confirmation,
- * receipt and calendar sync — be demonstrated and tested before The Playhouse
+ * It lets the full booking lifecycle, checkout, callback, confirmation,
+ * receipt and calendar sync, be demonstrated and tested before The Playhouse
  * Company's merchant accounts are live. Unreachable in production.
  */
 export default async function DevPayPage({ searchParams }: PageProps<"/dev/pay">) {

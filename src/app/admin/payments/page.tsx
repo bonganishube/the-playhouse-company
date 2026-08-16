@@ -83,7 +83,7 @@ export default async function PaymentsPage({
           Configured gateways:{" "}
           {gateways.length === 0 ? (
             <span className="text-amber-800">
-              none — set gateway credentials before going live
+              none, set gateway credentials before going live
             </span>
           ) : (
             <span className="text-ink-900">
@@ -171,7 +171,7 @@ export default async function PaymentsPage({
                     )}
                   </td>
                   <td className="px-4 py-2.5 font-mono text-xs">
-                    {payment.receiptNumber ?? "—"}
+                    {payment.receiptNumber ?? ", "}
                   </td>
                   <td className="px-4 py-2.5 text-right tabular">
                     {formatCents(toCents(payment.amount), payment.currency)}

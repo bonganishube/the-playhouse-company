@@ -348,7 +348,7 @@ export async function outstandingPayments(): Promise<{
     });
   }
 
-  // Most urgent first — the soonest events with money still owing.
+  // Most urgent first, the soonest events with money still owing.
   rows.sort((a, b) => (a.daysToEvent ?? 1e9) - (b.daysToEvent ?? 1e9));
 
   return {

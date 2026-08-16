@@ -47,7 +47,7 @@ function check(label: string, condition: boolean, detail?: string) {
     console.log(`  ✓ ${label}`);
   } else {
     failed += 1;
-    console.log(`  ✗ ${label}${detail ? ` — ${detail}` : ""}`);
+    console.log(`  ✗ ${label}${detail ? `, ${detail}` : ""}`);
   }
 }
 
@@ -97,7 +97,7 @@ function successCallback(reference: string, amountCents: number) {
 }
 
 async function main() {
-  console.log("\nThe Playhouse Company — booking lifecycle verification");
+  console.log("\nThe Playhouse Company, booking lifecycle verification");
   console.log("═".repeat(54));
 
   await cleanup();
@@ -139,29 +139,29 @@ async function main() {
   // Loft holds 60 minutes after each booking for turnaround.
   const inBuffer = await checkSlot(room.id, at(13 * 60), at(15 * 60));
   check(
-    "13:00 start rejected — inside the 30-minute turnaround",
+    "13:00 start rejected, inside the 30-minute turnaround",
     !inBuffer.ok && inBuffer.code === "ALREADY_BOOKED",
     inBuffer.ok ? "it was accepted" : inBuffer.code,
   );
 
   const afterBuffer = await addToCart(cart2.id, room.id, at(13 * 60 + 30), at(15 * 60 + 30));
-  check("13:30 start accepted — clear of the turnaround", afterBuffer.ok);
+  check("13:30 start accepted, clear of the turnaround", afterBuffer.ok);
 
   const tooShort = await checkSlot(room.id, at(18 * 60), at(18 * 60 + 30));
   check(
-    "30-minute booking rejected — below the 1-hour minimum",
+    "30-minute booking rejected, below the 1-hour minimum",
     !tooShort.ok && tooShort.code === "TOO_SHORT",
   );
 
   const misaligned = await checkSlot(room.id, at(18 * 60 + 10), at(19 * 60 + 10));
   check(
-    "18:10 start rejected — off the 30-minute grid",
+    "18:10 start rejected, off the 30-minute grid",
     !misaligned.ok && misaligned.code === "MISALIGNED",
   );
 
   const afterHours = await checkSlot(room.id, at(20 * 60 + 30), at(22 * 60 + 30));
   check(
-    "20:30–22:30 rejected — beyond the 21:00 close",
+    "20:30–22:30 rejected, beyond the 21:00 close",
     !afterHours.ok && afterHours.code === "OUTSIDE_OPERATING_HOURS",
   );
 
@@ -173,7 +173,7 @@ async function main() {
     localToUtc(soonDate, 11 * 60, room.timezone),
   );
   check(
-    "too-soon booking rejected — inside the notice period",
+    "too-soon booking rejected, inside the notice period",
     !tooSoon.ok && tooSoon.code === "TOO_SOON",
   );
 
@@ -375,7 +375,7 @@ async function main() {
 
   const revenue = await reports.revenueByVenue(range);
   check(
-    `revenue by venue — ${formatCents(revenue.totals.invoicedCents)} invoiced, ${formatCents(revenue.totals.collectedCents)} collected`,
+    `revenue by venue. ${formatCents(revenue.totals.invoicedCents)} invoiced, ${formatCents(revenue.totals.collectedCents)} collected`,
     revenue.totals.invoicedCents > 0,
   );
 
@@ -387,7 +387,7 @@ async function main() {
 
   const outstanding = await reports.outstandingPayments();
   check(
-    `outstanding payments — ${formatCents(outstanding.totals.outstandingCents)} across ${outstanding.totals.count}`,
+    `outstanding payments. ${formatCents(outstanding.totals.outstandingCents)} across ${outstanding.totals.count}`,
     outstanding.totals.outstandingCents >= toCents(opera3.total) / 2,
   );
 

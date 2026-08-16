@@ -1,24 +1,83 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Studio 3">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Venue placeholder">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#25404f"/><stop offset="100%" stop-color="#152730"/>
+    <linearGradient id="wstudio3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#060f16"/>
+      <stop offset="45%" stop-color="#22394a"/>
+      <stop offset="100%" stop-color="#060f16"/>
     </linearGradient>
-    <linearGradient id="v" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#000" stop-opacity="0.35"/>
-      <stop offset="50%" stop-color="#000" stop-opacity="0.05"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0.35"/>
+    <radialGradient id="poolstudio3" cx="0.5" cy="0.54" r="0.5">
+      <stop offset="0%" stop-color="#a8d8ff" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#a8d8ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="flstudio3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.62"/>
     </linearGradient>
+    <linearGradient id="ceilstudio3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.62"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.06"/>
+    </linearGradient>
+    <radialGradient id="vigstudio3" cx="0.5" cy="0.5" r="0.78">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </radialGradient>
+    <radialGradient id="lampstudio3" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fff8e2" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#ffe9b0" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#ffd98a" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect width="800" height="500" fill="url(#g)"/>
-  <g opacity="0.15" fill="#fff">
-    <rect x="0" y="0" width="26" height="500" rx="13"/><rect x="60" y="0" width="26" height="500" rx="13"/><rect x="120" y="0" width="26" height="500" rx="13"/><rect x="180" y="0" width="26" height="500" rx="13"/><rect x="240" y="0" width="26" height="500" rx="13"/><rect x="300" y="0" width="26" height="500" rx="13"/><rect x="360" y="0" width="26" height="500" rx="13"/><rect x="420" y="0" width="26" height="500" rx="13"/><rect x="480" y="0" width="26" height="500" rx="13"/><rect x="540" y="0" width="26" height="500" rx="13"/><rect x="600" y="0" width="26" height="500" rx="13"/><rect x="660" y="0" width="26" height="500" rx="13"/><rect x="720" y="0" width="26" height="500" rx="13"/><rect x="780" y="0" width="26" height="500" rx="13"/>
+  <rect width="800" height="500" fill="url(#wstudio3)"/>
+  <rect width="800" height="500" fill="url(#poolstudio3)"/>
+  <!-- ceiling -->
+  <path d="M0 0 L800 0 L560 100 L240 100 z" fill="#000" opacity="0.45"/>
+  <circle cx="400.0" cy="128.0" r="200.0" fill="url(#lampstudio3)"/>
+
+  <!-- side walls with vertical bass traps -->
+  <path d="M0 0 L240 100 L240 330 L0 500 z" fill="#000" opacity="0.32"/>
+  <path d="M800 0 L560 100 L560 330 L800 500 z" fill="#000" opacity="0.32"/>
+  <g fill="#fff" opacity="0.07">
+    <path d="M60 60 L150 108 L150 330 L60 420 z"/>
+    <path d="M740 60 L650 108 L650 330 L740 420 z"/>
   </g>
-  <rect width="800" height="500" fill="url(#v)"/>
-  <ellipse cx="400" cy="345" rx="250" ry="26" fill="#000" opacity="0.25"/>
-  <rect x="150" y="300" width="500" height="46" rx="4" fill="#fff" opacity="0.12"/>
-  <g fill="#fff" font-family="Georgia, serif" text-anchor="middle">
-    <text x="400" y="235" font-size="48" letter-spacing="1">Studio 3</text>
-    <text x="400" y="272" font-size="16" opacity="0.7" letter-spacing="4">RECORDING STUDIO</text>
+
+  <!-- treated rear wall -->
+  <rect x="240" y="100" width="320" height="230" fill="#fff" opacity="0.04"/>
+  <g><path d="M248 116 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M287 116 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M326 116 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M365 116 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M404 116 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M443 116 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M482 116 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M521 116 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M248 150 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M287 150 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M326 150 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M365 150 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M404 150 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M443 150 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M482 150 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M521 150 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M248 184 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M287 184 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M326 184 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M365 184 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M404 184 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M443 184 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M482 184 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M521 184 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M248 218 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M287 218 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M326 218 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M365 218 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M404 218 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M443 218 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M482 218 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M521 218 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M248 252 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M287 252 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M326 252 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M365 252 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M404 252 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M443 252 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/><path d="M482 252 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.13"/><path d="M521 252 l33 0 l0 28 l-33 0 z" fill="#fff" opacity="0.05"/></g>
+
+  <!-- studio monitors flanking the rear wall -->
+  <g fill="#000" opacity="0.5">
+    <rect x="196" y="216" width="46" height="70" rx="4"/>
+    <rect x="558" y="216" width="46" height="70" rx="4"/>
   </g>
-  <text x="400" y="440" fill="#fff" opacity="0.5" font-family="Georgia, serif" font-size="13" letter-spacing="4" text-anchor="middle">THE PLAYHOUSE COMPANY</text>
+  <g fill="#fff" opacity="0.16">
+    <circle cx="219" cy="242" r="14"/><circle cx="219" cy="270" r="7"/>
+    <circle cx="581" cy="242" r="14"/><circle cx="581" cy="270" r="7"/>
+  </g>
+
+  <!-- floor -->
+  <path d="M240 330 L560 330 L800 500 L0 500 z" fill="url(#flstudio3)"/>
+  <line x1="240" y1="330" x2="560" y2="330" stroke="#fff" stroke-opacity="0.18" stroke-width="2"/>
+
+  <!-- mixing desk silhouette in the foreground -->
+  <path d="M108 500 L146 404 L654 404 L692 500 z" fill="#000" opacity="0.62"/>
+  <g fill="#fff" opacity="0.20">
+    <rect x="186" y="424" width="26" height="5" rx="2"/><rect x="230" y="424" width="26" height="5" rx="2"/><rect x="274" y="424" width="26" height="5" rx="2"/><rect x="318" y="424" width="26" height="5" rx="2"/><rect x="362" y="424" width="26" height="5" rx="2"/><rect x="406" y="424" width="26" height="5" rx="2"/><rect x="450" y="424" width="26" height="5" rx="2"/><rect x="494" y="424" width="26" height="5" rx="2"/><rect x="538" y="424" width="26" height="5" rx="2"/><rect x="582" y="424" width="26" height="5" rx="2"/>
+    <circle cx="199" cy="448" r="4"/><circle cx="243" cy="448" r="4"/><circle cx="287" cy="448" r="4"/><circle cx="331" cy="448" r="4"/><circle cx="375" cy="448" r="4"/><circle cx="419" cy="448" r="4"/><circle cx="463" cy="448" r="4"/><circle cx="507" cy="448" r="4"/><circle cx="551" cy="448" r="4"/><circle cx="595" cy="448" r="4"/>
+  </g>
+
+  <!-- condenser microphone on a boom -->
+  <path d="M628 404 q0 -74 -92 -74 l-58 0" fill="none" stroke="#000" stroke-opacity="0.55" stroke-width="6"/>
+  <g>
+    <rect x="432" y="272" width="52" height="106" rx="26" fill="#d8dde2" opacity="0.55"/>
+    <rect x="432" y="272" width="52" height="106" rx="26" fill="none" stroke="#fff" stroke-opacity="0.45" stroke-width="2.5"/>
+    <g stroke="#fff" stroke-opacity="0.28" stroke-width="1.8">
+      <line x1="440" y1="292" x2="476" y2="292"/><line x1="440" y1="308" x2="476" y2="308"/><line x1="440" y1="324" x2="476" y2="324"/><line x1="440" y1="340" x2="476" y2="340"/><line x1="440" y1="356" x2="476" y2="356"/>
+    </g>
+  </g>
+  <!-- pop shield -->
+  <ellipse cx="368" cy="322" rx="30" ry="40" fill="#fff" opacity="0.07"/>
+  <ellipse cx="368" cy="322" rx="30" ry="40" fill="none" stroke="#fff" stroke-opacity="0.35" stroke-width="2.5"/>
+  <path d="M398 322 q22 0 34 24" fill="none" stroke="#000" stroke-opacity="0.5" stroke-width="5"/>
+  <rect width="800" height="500" fill="url(#vigstudio3)"/>
 </svg>

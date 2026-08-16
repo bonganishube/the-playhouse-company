@@ -11,7 +11,7 @@ import {
 } from "./types";
 
 /**
- * iKhokha — Payment Link API.
+ * iKhokha. Payment Link API.
  *
  * Requests are authenticated with an application id header plus an IK-SIGN
  * signature: HMAC-SHA256, in hex, over the request path concatenated with the

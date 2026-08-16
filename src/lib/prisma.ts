@@ -30,7 +30,7 @@ if (process.env.NODE_ENV !== "production") {
 
 /**
  * Postgres error code raised when our reservations_no_overlap exclusion
- * constraint rejects a write — i.e. someone else took the slot first.
+ * constraint rejects a write, i.e. someone else took the slot first.
  */
 export const EXCLUSION_VIOLATION = "23P01";
 

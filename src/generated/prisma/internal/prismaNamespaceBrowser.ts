@@ -65,6 +65,7 @@ export const ModelName = {
   PaymentEvent: 'PaymentEvent',
   AuditLog: 'AuditLog',
   Setting: 'Setting',
+  NewsletterSubscriber: 'NewsletterSubscriber',
   EmailLog: 'EmailLog'
 } as const
 
@@ -319,6 +320,19 @@ export const SettingScalarFieldEnum = {
 } as const
 
 export type SettingScalarFieldEnum = (typeof SettingScalarFieldEnum)[keyof typeof SettingScalarFieldEnum]
+
+
+export const NewsletterSubscriberScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  consentedAt: 'consentedAt',
+  unsubscribedAt: 'unsubscribedAt',
+  sourceIp: 'sourceIp',
+  createdAt: 'createdAt'
+} as const
+
+export type NewsletterSubscriberScalarFieldEnum = (typeof NewsletterSubscriberScalarFieldEnum)[keyof typeof NewsletterSubscriberScalarFieldEnum]
 
 
 export const EmailLogScalarFieldEnum = {

@@ -8,7 +8,7 @@ import { Alert, Button } from "@/components/ui";
  * Date selection for venues sold at a fixed daily rate.
  *
  * Theatres and function venues are hired by the day, so the customer chooses
- * dates rather than times — a timeslot grid would invite someone to select two
+ * dates rather than times, a timeslot grid would invite someone to select two
  * hours and be charged for a full day.
  */
 

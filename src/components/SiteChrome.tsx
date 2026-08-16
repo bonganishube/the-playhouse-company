@@ -5,6 +5,15 @@ import { getSession, isStaffRole } from "@/lib/auth";
 import { findCart } from "@/lib/cart";
 import { prisma } from "@/lib/prisma";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/venueCategories";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaXTwitter,
+  FaYoutube,
+} from "react-icons/fa6";
+import { ChevronUpIcon } from "./icons";
+import { NewsletterForm } from "./NewsletterForm";
+import { SiteNav } from "./SiteNav";
 
 async function cartCount(): Promise<number> {
   const cart = await findCart();
@@ -17,188 +26,246 @@ async function cartCount(): Promise<number> {
 /**
  * Site header.
  *
- * Follows the pattern of The Playhouse Company's own website: the navigation
- * is laid over the page's hero image rather than sitting in a bar of its own,
- * and the logo occupies a white card that drops from the top edge. Every page
- * therefore renders a <PageHero> as its first element, which the header sits
- * on top of.
+ * Follows the pattern of The Playhouse Company's own website: a deep indigo
+ * band carries the navigation, with the logo occupying a white card that hangs
+ * from the top edge. The band is translucent and laid over the page hero (see
+ * .header-gradient in globals.css), so the photograph reads faintly through it
+ * while the tint keeps white nav type legible over any frame.
+ *
+ * Session and cart lookups stay here on the server; <SiteNav> is the client
+ * shell that needs state for the small-screen drawer.
  */
 export async function SiteHeader() {
   const [session, count] = await Promise.all([getSession(), cartCount()]);
 
   return (
-    <header className="absolute inset-x-0 top-0 z-50 no-print">
-      <div className="mx-auto flex max-w-7xl items-start justify-between gap-6 px-4">
-        {/* White card, flush with the top edge and overhanging the hero. */}
+    <header className="header-gradient absolute inset-x-0 top-0 z-50 no-print">
+      <div className="mx-auto flex max-w-6xl items-start justify-between gap-6 px-4">
+        {/* The logo is used exactly as supplied, it carries its own white
+            panel and rounded lower corners, so no wrapper background, border
+            or shadow is added. It hangs from the very top of the viewport. */}
         <Link
           href="/"
-          className="shrink-0 rounded-b-xl bg-white px-5 pt-3 pb-3 shadow-lg"
-          aria-label="The Playhouse Company — venue bookings, home"
+          className="shrink-0"
+          aria-label="The Playhouse Company, venue bookings, home"
         >
           <Image
             src="/playhouse_logo_svg_bg.svg"
-            alt="The Playhouse Company — an agency of the Department of Sport, Arts and Culture"
+            alt="The Playhouse Company. An agency of the Department of Sport, Arts and Culture"
             width={7758}
             height={4282}
             priority
             // Static SVG: served as-is rather than through the image optimiser.
             unoptimized
-            className="h-14 w-auto sm:h-16"
+            className="h-20 w-auto sm:h-[7.5rem]"
           />
         </Link>
 
-        <nav
-          className="flex flex-wrap items-center justify-end gap-x-1 gap-y-1 py-5 text-sm font-medium text-white"
-          aria-label="Primary"
-        >
-          <NavDropdown label="Venues" href="/venues">
-            {CATEGORY_ORDER.map((category) => (
-              <DropdownLink
-                key={category}
-                href={`/venues#${category.toLowerCase()}`}
-              >
-                {CATEGORY_LABELS[category]}
-              </DropdownLink>
-            ))}
-            <DropdownLink href="/venues">All venues</DropdownLink>
-          </NavDropdown>
-
-          <NavLink href="/booking">Find a booking</NavLink>
-
-          <NavLink href="/cart">
-            Cart
-            {count > 0 && (
-              <span className="ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-gold-400 px-1.5 text-xs font-semibold text-ink-900">
-                {count}
-              </span>
-            )}
-          </NavLink>
-
-          {session && isStaffRole(session.role) && (
-            <NavLink href="/admin">Admin</NavLink>
-          )}
-
-          {session ? (
-            <NavLink href="/account">{session.fullName.split(" ")[0]}</NavLink>
-          ) : (
-            <NavLink href="/signin">Sign in</NavLink>
-          )}
-        </nav>
+        <SiteNav
+          cartCount={count}
+          userFirstName={session ? session.fullName.split(" ")[0]! : null}
+          isStaff={Boolean(session && isStaffRole(session.role))}
+          venueLinks={[
+            ...CATEGORY_ORDER.map((category) => ({
+              href: `/venues#${category.toLowerCase()}`,
+              label: CATEGORY_LABELS[category],
+            })),
+            { href: "/venues", label: "All venues" },
+          ]}
+        />
       </div>
     </header>
   );
 }
 
-function NavLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="px-3 py-2 transition-colors hover:text-gold-400"
-    >
-      {children}
-    </Link>
-  );
-}
-
-/**
- * Navigation item with a submenu.
- *
- * Opens on hover and on keyboard focus — `focus-within` keeps it reachable by
- * tab, which a hover-only menu would not be.
- */
-function NavDropdown({
-  label,
-  href,
-  children,
-}: {
-  label: string;
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="group relative">
-      <Link
-        href={href}
-        className="inline-block px-3 py-2 transition-colors hover:text-gold-400 group-focus-within:text-gold-400"
-      >
-        {label}
-      </Link>
-      <div className="invisible absolute left-0 top-full z-50 min-w-56 bg-white py-1 opacity-0 shadow-xl transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function DropdownLink({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      className="block px-5 py-2.5 text-[15px] font-normal text-ink-900 hover:bg-parchment-100 hover:text-brand-600"
-    >
-      {children}
-    </Link>
-  );
-}
-
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-parchment-300 bg-white no-print">
-      <div className="mx-auto max-w-7xl px-4 py-8 text-sm text-ink-500">
-        <div className="grid gap-6 sm:grid-cols-3">
+    <footer className="mt-auto bg-sunflower-400 text-ink-900 no-print">
+      <div className="mx-auto max-w-6xl px-4 pt-10 pb-6">
+        {/* Columns are sized to their content: the address and department
+            list is the widest, the link list the narrowest. */}
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.05fr_0.85fr_1.3fr]">
+          {/* ------------------------------------------- identity & social */}
           <div>
-            {/* Reproduced larger here than in the header so the departmental
-                endorsement carried in the lock-up is legible. */}
+            {/* The transparent footer variant of the lock-up, so it sits
+                directly on the yellow with no white panel behind it. */}
             <Image
-              src="/playhouse_logo_svg_bg.svg"
-              alt="The Playhouse Company — an agency of the Department of Sport, Arts and Culture"
-              width={7758}
-              height={4282}
+              src="/playhouse_logo_agency_svg_footer.svg"
+              alt="The Playhouse Company, an agency of the Department of Sport, Arts and Culture"
+              width={3901}
+              height={2041}
               unoptimized
               className="h-24 w-auto"
             />
-            <p className="mt-3">
-              231 Anton Lembede Street
-              <br />
-              Durban, 4001
-            </p>
-          </div>
-          <div>
-            <p className="font-medium text-ink-700">Bookings</p>
-            <ul className="mt-1 space-y-1">
-              <li>
-                <Link href="/venues" className="hover:text-brand-600">
-                  Browse venues
-                </Link>
-              </li>
-              <li>
-                <Link href="/booking" className="hover:text-brand-600">
-                  Look up a booking
-                </Link>
-              </li>
+
+            <ul className="mt-5 flex gap-3">
+              {SOCIAL_LINKS.map((social) => (
+                <li key={social.label}>
+                  <a
+                    href={social.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`The Playhouse Company on ${social.label}`}
+                    className="flex h-10 w-10 items-center justify-center rounded-full bg-ink-900 text-sunflower-400 transition-transform duration-150 hover:scale-110 hover:bg-black"
+                  >
+                    <social.Icon className={social.size} aria-hidden="true" />
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
-          <div>
-            <p className="font-medium text-ink-700">Enquiries</p>
-            <p className="mt-1">bookings@playhousecompany.com</p>
+
+          {/* ------------------------------------------------------ sitemap */}
+          <nav aria-label="Footer">
+            <h2 className={FOOTER_HEADING}>Bookings</h2>
+            <ul className="text-[15px] leading-7">
+              {FOOTER_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="transition-colors hover:text-red-700"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* ------------------------------------------------------ contact */}
+          <div className="text-[15px]">
+            <h2 className={FOOTER_HEADING}>The Playhouse Company</h2>
+            <address className="not-italic leading-7">
+              231 Anton Lembede Street
+              <br />
+              Durban, KZN, RSA
+              <br />
+              {/* break-words so the address wraps rather than widening the
+                  column, which it is long enough to do on small screens. */}
+              <a
+                href="mailto:bookings@playhousecompany.com"
+                className="break-words transition-colors hover:text-red-700"
+              >
+                bookings@playhousecompany.com
+              </a>
+            </address>
+
+            {/* mt-5 rather than mt-6: with the heading's own line box and
+                margin this makes the block 56px, a multiple of the 28px line
+                rhythm, so the department rows stay on the same baseline grid
+                as the address above and the link column alongside. */}
+            <h2 className={`${FOOTER_HEADING} mt-5`}>Departments</h2>
+            <ul className="leading-7">
+              {DEPARTMENTS.map((department) => (
+                <li key={department.label}>
+                  {department.label}:{" "}
+                  <a
+                    href={`tel:${department.tel.replace(/[^+\d]/g, "")}`}
+                    className="whitespace-nowrap transition-colors hover:text-red-700"
+                  >
+                    {department.tel}
+                    {department.alt && `/${department.alt}`}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-        <p className="mt-8 border-t border-parchment-200 pt-4 text-xs">
-          © {new Date().getFullYear()} The Playhouse Company. All rights reserved.
-        </p>
       </div>
+
+      {/* Subscription sits in the same container as the columns above, so its
+          edges line up rather than stepping inward. */}
+      <div className="mx-auto max-w-6xl px-4 pb-6">
+        <NewsletterForm />
+      </div>
+
+      {/* ---------------------------------------------------------- legal */}
+      <div className="border-t border-black/15">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-5 text-sm">
+          <p>
+            © {new Date().getFullYear()} The Playhouse Company. All rights
+            reserved.
+          </p>
+          <p className="flex items-center gap-3">
+            <Link href="/privacy" className="transition-colors hover:text-red-700">
+              Privacy
+            </Link>
+            <span aria-hidden="true" className="text-ink-900/30">
+              |
+            </span>
+            <Link href="/terms" className="transition-colors hover:text-red-700">
+              Terms of Use
+            </Link>
+          </p>
+        </div>
+      </div>
+
+      {/* Plain anchor rather than a scroll handler: works without JavaScript,
+          and honours the reader's reduced-motion preference through the
+          scroll-behavior rule in globals.css. */}
+      <a
+        href="#top"
+        aria-label="Back to top"
+        className="fixed right-0 bottom-0 z-40 flex h-12 w-12 items-center justify-center bg-ink-900 text-white transition-colors hover:bg-black"
+      >
+        <ChevronUpIcon />
+      </a>
     </footer>
   );
 }
+
+/** Shared heading treatment, so the three columns start on one baseline. */
+const FOOTER_HEADING =
+  "mb-2 text-xs font-bold leading-7 uppercase tracking-[0.18em] text-ink-900/70";
+
+const SOCIAL_LINKS = [
+  {
+    label: "Facebook",
+    href: "https://www.facebook.com/playhousecompany",
+    Icon: FaFacebookF,
+    size: "h-[17px] w-[17px]",
+  },
+  {
+    label: "X",
+    href: "https://x.com/playhousecoza",
+    Icon: FaXTwitter,
+    size: "h-[17px] w-[17px]",
+  },
+  {
+    label: "Instagram",
+    href: "https://www.instagram.com/playhousecompany",
+    Icon: FaInstagram,
+    size: "h-[19px] w-[19px]",
+  },
+  {
+    label: "YouTube",
+    href: "https://www.youtube.com/@theplayhousecompany",
+    Icon: FaYoutube,
+    size: "h-[19px] w-[19px]",
+  },
+];
+
+/**
+ * Booking-portal routes only. The wider site's sections (What's On, Gallery,
+ * Tenders and so on) live on playhousecompany.com and are deliberately not
+ * guessed at here. A footer full of broken links is worse than a short one.
+ */
+const FOOTER_LINKS = [
+  { href: "/venues", label: "Venue Hire" },
+  { href: "/venues#theatre", label: "Theatres" },
+  { href: "/venues#function_venue", label: "Function Venues" },
+  { href: "/venues#rehearsal_venue", label: "Rehearsal Venues" },
+  { href: "/venues#recording_studio", label: "Recording Studio" },
+  { href: "/booking", label: "Find a Booking" },
+  { href: "/cart", label: "Your Cart" },
+  { href: "/signin", label: "Sign In" },
+];
+
+const DEPARTMENTS = [
+  { label: "Central Switchboard", tel: "+27 31 369 9555" },
+  { label: "Box Office", tel: "+27 31 369 9596", alt: "40" },
+  { label: "Front of House Manager", tel: "+27 31 369 9527" },
+  { label: "Recording Studio", tel: "+27 31 369 9520" },
+  { label: "Theatre Venue Hire", tel: "+27 31 369 9461" },
+  { label: "Arts Department", tel: "+27 31 369 9460", alt: "9463" },
+];

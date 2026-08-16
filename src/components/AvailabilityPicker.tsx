@@ -34,7 +34,7 @@ type DayAvailability = {
 };
 
 /**
- * Only hourly venues use this picker — daily-rate venues are booked by date
+ * Only hourly venues use this picker, daily-rate venues are booked by date
  * through DayPicker, so no daily rate is needed here.
  */
 export type VenuePricing = {

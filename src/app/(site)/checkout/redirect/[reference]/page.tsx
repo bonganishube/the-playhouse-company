@@ -28,7 +28,7 @@ export default async function CheckoutRedirectPage({
   const { checkout } = await rebuildCheckout(booking.id);
 
   if (checkout.kind === "redirect") {
-    // Nothing to sign — send the customer straight on.
+    // Nothing to sign, send the customer straight on.
     return (
       <>
         <PageHero title="Redirecting to payment" />

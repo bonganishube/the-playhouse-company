@@ -6,7 +6,7 @@ import { getGateway } from "@/lib/payments";
 /**
  * Inbound gateway callbacks.
  *
- * This is the endpoint that actually confirms a booking — the customer's
+ * This is the endpoint that actually confirms a booking, the customer's
  * return to the site is only cosmetic, since a browser redirect can be lost,
  * replayed or forged.
  *
@@ -51,7 +51,7 @@ export async function POST(
 
     if (!outcome.handled) {
       console.warn(
-        `[webhook:${slug}] not applied — ${outcome.reason ?? "unknown reason"}`,
+        `[webhook:${slug}] not applied, ${outcome.reason ?? "unknown reason"}`,
       );
       // Acknowledged: the attempt is recorded, and retrying will not help.
       return NextResponse.json(
@@ -63,7 +63,7 @@ export async function POST(
     return NextResponse.json({ received: true, applied: true }, { status: 200 });
   } catch (error) {
     console.error(`[webhook:${slug}] processing failed`, error);
-    // A genuine server-side failure — invite the gateway to retry.
+    // A genuine server-side failure, invite the gateway to retry.
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
 }

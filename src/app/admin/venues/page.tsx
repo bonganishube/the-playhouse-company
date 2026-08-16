@@ -82,7 +82,7 @@ export default async function AdminVenuesPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <span className="tabular">
-                      {rate ? formatMoney(rate.amount) : "—"}
+                      {rate ? formatMoney(rate.amount) : ", "}
                     </span>
                     <p className="text-xs text-ink-500">
                       {rateUnit(venue.rateBasis)}

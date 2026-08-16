@@ -174,7 +174,7 @@ export default async function ReportPage({
 }
 
 function formatValue(value: unknown, kind: ColumnKind): string {
-  if (value === null || value === undefined || value === "") return "—";
+  if (value === null || value === undefined || value === "") return ", ";
 
   switch (kind) {
     case "money":

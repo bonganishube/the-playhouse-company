@@ -6,8 +6,8 @@ import { prisma } from "../prisma";
  * Outbound mail.
  *
  * With SMTP configured, messages are delivered through the transport. Without
- * it — local development, or before The Playhouse Company's mail relay is
- * provisioned — messages are recorded to the email log instead of being sent,
+ * it. Local development, or before The Playhouse Company's mail relay is
+ * provisioned. Messages are recorded to the email log instead of being sent,
  * so the flow remains testable and nothing is silently lost.
  *
  * Every attempt is written to EmailLog either way, giving proof of despatch
@@ -67,7 +67,7 @@ export async function sendMail(input: MailInput): Promise<boolean> {
       success = true;
     } else {
       console.info(
-        `[mail] SMTP not configured — logging "${input.subject}" to ${input.to}`,
+        `[mail] SMTP not configured, logging "${input.subject}" to ${input.to}`,
       );
       success = true;
     }

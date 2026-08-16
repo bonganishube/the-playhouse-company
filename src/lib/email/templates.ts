@@ -4,7 +4,7 @@ import { formatRange } from "../time";
 /**
  * Email templates.
  *
- * Plain, table-based HTML with inline styles — the only markup that renders
+ * Plain, table-based HTML with inline styles, the only markup that renders
  * dependably across Outlook, Gmail and mobile clients. Every message also
  * carries a text alternative.
  */
@@ -89,7 +89,7 @@ function totalsBlock(data: BookingEmailData): string {
     ${
       outstanding > 0
         ? `<tr><td style="padding:8px 0;border-top:1px solid ${LINE};"><strong>Balance outstanding</strong></td><td style="padding:8px 0;border-top:1px solid ${LINE};text-align:right;"><strong>${escape(formatCents(outstanding, data.currency))}</strong></td></tr>`
-        : `<tr><td style="padding:8px 0;border-top:1px solid ${LINE};" colspan="2"><strong>Paid in full — thank you.</strong></td></tr>`
+        : `<tr><td style="padding:8px 0;border-top:1px solid ${LINE};" colspan="2"><strong>Paid in full, thank you.</strong></td></tr>`
     }
   </table>`;
 }
@@ -113,7 +113,7 @@ function referenceBadge(reference: string): string {
 
 export function bookingConfirmed(data: BookingEmailData) {
   const html = layout(
-    `Booking confirmed — ${data.reference}`,
+    `Booking confirmed: ${data.reference}`,
     `<p>Dear ${escape(data.contactName)},</p>
      <p>Your booking with The Playhouse Company is <strong>confirmed</strong>.</p>
      ${referenceBadge(data.reference)}
@@ -132,7 +132,7 @@ export function bookingConfirmed(data: BookingEmailData) {
     ``,
     ...data.lines.map(
       (l) =>
-        `- ${l.venueName}: ${formatRange(l.startsAt, l.endsAt, l.timezone)} — ${formatCents(l.lineTotalCents, data.currency)}`,
+        `- ${l.venueName}: ${formatRange(l.startsAt, l.endsAt, l.timezone)}, ${formatCents(l.lineTotalCents, data.currency)}`,
     ),
     ``,
     `Total: ${formatCents(data.totalCents, data.currency)}`,
@@ -142,14 +142,14 @@ export function bookingConfirmed(data: BookingEmailData) {
     `View your booking: ${data.bookingUrl}`,
   ].join("\n");
 
-  return { subject: `Booking confirmed — ${data.reference}`, html, text };
+  return { subject: `Booking confirmed: ${data.reference}`, html, text };
 }
 
 /**
  * Payment receipt, structured as a tax invoice.
  *
  * The amount received is VAT-inclusive, so the VAT portion is stated
- * separately alongside the amount excluding VAT — a South African tax invoice
+ * separately alongside the amount excluding VAT, a South African tax invoice
  * must show all three, together with the supplier's VAT registration number.
  */
 export function paymentReceipt(data: {
@@ -169,7 +169,7 @@ export function paymentReceipt(data: {
   const exclusiveCents = data.amountCents - data.vatAmountCents;
 
   const html = layout(
-    `Tax invoice / receipt — ${data.receiptNumber}`,
+    `Tax invoice / receipt: ${data.receiptNumber}`,
     `<p>Dear ${escape(data.contactName)},</p>
      <p>We acknowledge receipt of your payment. This serves as your tax invoice and receipt.</p>
      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;font-size:14px;border:1px solid ${LINE};">
@@ -199,7 +199,7 @@ export function paymentReceipt(data: {
   const text = [
     `Dear ${data.contactName},`,
     ``,
-    `Payment received — tax invoice and receipt.`,
+    `Payment received. This is your tax invoice and receipt.`,
     `Receipt number: ${data.receiptNumber}`,
     `Booking reference: ${data.reference}`,
     `Date: ${data.paidAt.toISOString().slice(0, 10)}`,
@@ -221,7 +221,7 @@ export function paymentReceipt(data: {
   ].join("\n");
 
   return {
-    subject: `Tax invoice ${data.receiptNumber} — ${data.reference}`,
+    subject: `Tax invoice ${data.receiptNumber} for booking ${data.reference}`,
     html,
     text,
   };
@@ -229,7 +229,7 @@ export function paymentReceipt(data: {
 
 export function awaitingApproval(data: BookingEmailData) {
   const html = layout(
-    `Booking received — ${data.reference}`,
+    `Booking received: ${data.reference}`,
     `<p>Dear ${escape(data.contactName)},</p>
      <p>Thank you. Your booking has been received and your payment processed. This venue requires
         <strong>administrative approval</strong>, so your booking is not yet final.</p>
@@ -248,12 +248,12 @@ export function awaitingApproval(data: BookingEmailData) {
     ``,
     data.bookingUrl,
   ].join("\n");
-  return { subject: `Booking received, awaiting approval — ${data.reference}`, html, text };
+  return { subject: `Booking received, awaiting approval: ${data.reference}`, html, text };
 }
 
 export function approvalRequestInternal(data: BookingEmailData & { adminUrl: string }) {
   const html = layout(
-    `Approval required — ${data.reference}`,
+    `Approval required: ${data.reference}`,
     `<p>A booking is awaiting approval.</p>
      ${referenceBadge(data.reference)}
      <p><strong>Customer:</strong> ${escape(data.contactName)}</p>
@@ -268,7 +268,7 @@ export function approvalRequestInternal(data: BookingEmailData & { adminUrl: str
     ``,
     data.adminUrl,
   ].join("\n");
-  return { subject: `Approval required — ${data.reference}`, html, text };
+  return { subject: `Approval required: ${data.reference}`, html, text };
 }
 
 export function bookingRejected(data: {
@@ -278,7 +278,7 @@ export function bookingRejected(data: {
   bookingUrl: string;
 }) {
   const html = layout(
-    `Booking not approved — ${data.reference}`,
+    `Booking not approved: ${data.reference}`,
     `<p>Dear ${escape(data.contactName)},</p>
      <p>Regrettably your booking request could not be approved.</p>
      ${referenceBadge(data.reference)}
@@ -296,7 +296,7 @@ export function bookingRejected(data: {
     `Any payment made will be refunded.`,
     data.bookingUrl,
   ].join("\n");
-  return { subject: `Booking not approved — ${data.reference}`, html, text };
+  return { subject: `Booking not approved: ${data.reference}`, html, text };
 }
 
 export function bookingCancelled(data: {
@@ -306,7 +306,7 @@ export function bookingCancelled(data: {
   bookingUrl: string;
 }) {
   const html = layout(
-    `Booking cancelled — ${data.reference}`,
+    `Booking cancelled: ${data.reference}`,
     `<p>Dear ${escape(data.contactName)},</p>
      <p>Your booking has been cancelled.</p>
      ${referenceBadge(data.reference)}
@@ -323,7 +323,7 @@ export function bookingCancelled(data: {
     ``,
     data.bookingUrl,
   ].join("\n");
-  return { subject: `Booking cancelled — ${data.reference}`, html, text };
+  return { subject: `Booking cancelled: ${data.reference}`, html, text };
 }
 
 function escape(value: string): string {

@@ -10,7 +10,7 @@ import {
  * The Playhouse Company venue catalogue and tariff.
  *
  * Source: "VENUE PRICES – FIXED RATES" schedule supplied by The Playhouse
- * Company. Rates are VAT-INCLUSIVE — the figure shown is the figure charged.
+ * Company. Rates are VAT-INCLUSIVE, the figure shown is the figure charged.
  *
  * Theatres and function venues carry a day rate only; rehearsal venues and the
  * recording studio an hourly rate only. That distinction is commercial, not
@@ -63,7 +63,7 @@ export const VENUES: VenueSeed[] = [
     description:
       "The Playhouse Company's flagship auditorium and the largest of its performance spaces, carrying a full proscenium stage with orchestra pit, fly tower and dressing-room complex. Suited to opera, ballet, large-scale musicals, orchestral concerts and major corporate events. Technical support, front-of-house staffing and box-office services are arranged separately with the production office.",
     shortInfo: "Flagship proscenium auditorium with orchestra pit and fly tower.",
-    capacity: null,
+    capacity: 1224,
     sortOrder: 10,
     workflow: BookingWorkflow.APPROVAL_REQUIRED,
     paymentPolicy: PP.DEPOSIT_ALLOWED,
@@ -87,7 +87,7 @@ export const VENUES: VenueSeed[] = [
     description:
       "A versatile mid-scale theatre designed for drama, dance and chamber productions, offering an intimate audience relationship with the stage while retaining full technical capability. The preferred house for contemporary theatre, festivals and school productions.",
     shortInfo: "Mid-scale house for drama, dance and chamber work.",
-    capacity: null,
+    capacity: 468,
     sortOrder: 20,
     workflow: BookingWorkflow.APPROVAL_REQUIRED,
     paymentPolicy: PP.DEPOSIT_ALLOWED,
@@ -111,7 +111,7 @@ export const VENUES: VenueSeed[] = [
     description:
       "An adaptable studio-style space with flexible seating, well suited to experimental work, staged readings, workshops and intimate performance. The open floor allows for in-the-round, thrust or traverse configurations.",
     shortInfo: "Flexible studio space with reconfigurable seating.",
-    capacity: null,
+    capacity: 136,
     sortOrder: 30,
     workflow: BookingWorkflow.INSTANT,
     paymentPolicy: PP.FULL_UPFRONT,
@@ -137,7 +137,7 @@ export const VENUES: VenueSeed[] = [
     description:
       "The Playhouse's principal reception space, used for launches, exhibitions, conferences, awards evenings and pre-performance functions. Catering may be arranged through the Company's approved suppliers.",
     shortInfo: "Principal reception space for functions and exhibitions.",
-    capacity: null,
+    capacity: 300,
     sortOrder: 40,
     workflow: BookingWorkflow.APPROVAL_REQUIRED,
     paymentPolicy: PP.DEPOSIT_ALLOWED,
@@ -160,7 +160,7 @@ export const VENUES: VenueSeed[] = [
     rate: "14000.00",
     description: `Function venue at The Playhouse Company, available for conferences, receptions and corporate events. ${PENDING}`,
     shortInfo: "Function venue for conferences and receptions.",
-    capacity: null,
+    capacity: 100,
     sortOrder: 50,
     workflow: BookingWorkflow.APPROVAL_REQUIRED,
     paymentPolicy: PP.DEPOSIT_ALLOWED,
@@ -183,7 +183,7 @@ export const VENUES: VenueSeed[] = [
     rate: "4000.00",
     description: `Private function room at The Playhouse Company, suited to smaller meetings, hospitality and pre-performance receptions. ${PENDING}`,
     shortInfo: "Private room for smaller meetings and hospitality.",
-    capacity: null,
+    capacity: 10,
     sortOrder: 60,
     workflow: BookingWorkflow.INSTANT,
     paymentPolicy: PP.FULL_UPFRONT,
@@ -206,7 +206,7 @@ export const VENUES: VenueSeed[] = [
     rate: "28000.00",
     description: `Premium function venue at The Playhouse Company, available for banquets, awards evenings and corporate hospitality. ${PENDING}`,
     shortInfo: "Premium function venue for banquets and hospitality.",
-    capacity: null,
+    capacity: 100,
     sortOrder: 70,
     workflow: BookingWorkflow.APPROVAL_REQUIRED,
     paymentPolicy: PP.DEPOSIT_ALLOWED,
@@ -225,14 +225,15 @@ export const VENUES: VenueSeed[] = [
   // ------------------------------------------------------- Rehearsal venues
   ...(
     [
-      ["room-503", "Room 503", "390.00", 80],
-      ["room-506", "Room 506", "110.00", 90],
-      ["room-507", "Room 507", "110.00", 100],
-      ["room-508", "Room 508", "110.00", 110],
-      ["room-410", "Room 410", "340.00", 120],
-      ["room-a1", "Room A1", "260.00", 130],
+      // slug, name, hourly rate, sort order, capacity
+      ["room-503", "Room 503", "390.00", 80, 120],
+      ["room-506", "Room 506", "110.00", 90, null],
+      ["room-507", "Room 507", "110.00", 100, null],
+      ["room-508", "Room 508", "110.00", 110, null],
+      ["room-410", "Room 410", "340.00", 120, 60],
+      ["room-a1", "Room A1", "260.00", 130, 60],
     ] as const
-  ).map(([slug, name, rate, sortOrder]) => ({
+  ).map(([slug, name, rate, sortOrder, capacity]) => ({
     slug,
     name,
     category: VenueCategory.REHEARSAL_VENUE,
@@ -240,7 +241,7 @@ export const VENUES: VenueSeed[] = [
     rate,
     description: `Rehearsal room at The Playhouse Company, available to resident companies and external hirers for rehearsal, auditions, classes and workshops. ${PENDING}`,
     shortInfo: "Rehearsal room for rehearsal, auditions and workshops.",
-    capacity: null,
+    capacity,
     sortOrder,
     workflow: BookingWorkflow.INSTANT,
     paymentPolicy: PP.FULL_UPFRONT,
@@ -253,7 +254,9 @@ export const VENUES: VenueSeed[] = [
     openDays: MON_TO_SAT,
     opensAt: 7 * 60,
     closesAt: 21 * 60,
-    image: "/venues/rehearsal-room.svg",
+    // Each room has its own placeholder, tinted differently, so neighbouring
+    // cards in the listing are distinguishable at a glance.
+    image: `/venues/${slug}.svg`,
   })),
 
   // ------------------------------------------------------- Recording studio

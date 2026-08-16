@@ -1,24 +1,101 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Alhambra">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Venue placeholder">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#3d2c4f"/><stop offset="100%" stop-color="#281c35"/>
+    <linearGradient id="walhambra" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a2019"/>
+      <stop offset="45%" stop-color="#2f6b58"/>
+      <stop offset="100%" stop-color="#0a2019"/>
     </linearGradient>
-    <linearGradient id="v" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#000" stop-opacity="0.35"/>
-      <stop offset="50%" stop-color="#000" stop-opacity="0.05"/>
-      <stop offset="100%" stop-color="#000" stop-opacity="0.35"/>
+    <radialGradient id="poolalhambra" cx="0.5" cy="0.54" r="0.5">
+      <stop offset="0%" stop-color="#d8fff0" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#d8fff0" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="flalhambra" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.62"/>
     </linearGradient>
+    <linearGradient id="ceilalhambra" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.62"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.06"/>
+    </linearGradient>
+    <radialGradient id="vigalhambra" cx="0.5" cy="0.5" r="0.78">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </radialGradient>
+    <radialGradient id="lampalhambra" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fff8e2" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#ffe9b0" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#ffd98a" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect width="800" height="500" fill="url(#g)"/>
-  <g opacity="0.15" fill="#fff">
-    <rect x="0" y="0" width="26" height="500" rx="13"/><rect x="60" y="0" width="26" height="500" rx="13"/><rect x="120" y="0" width="26" height="500" rx="13"/><rect x="180" y="0" width="26" height="500" rx="13"/><rect x="240" y="0" width="26" height="500" rx="13"/><rect x="300" y="0" width="26" height="500" rx="13"/><rect x="360" y="0" width="26" height="500" rx="13"/><rect x="420" y="0" width="26" height="500" rx="13"/><rect x="480" y="0" width="26" height="500" rx="13"/><rect x="540" y="0" width="26" height="500" rx="13"/><rect x="600" y="0" width="26" height="500" rx="13"/><rect x="660" y="0" width="26" height="500" rx="13"/><rect x="720" y="0" width="26" height="500" rx="13"/><rect x="780" y="0" width="26" height="500" rx="13"/>
+  <rect width="800" height="500" fill="url(#walhambra)"/>
+  <rect width="800" height="500" fill="url(#poolalhambra)"/>
+  <!-- coffered ceiling -->
+  <path d="M0 0 L800 0 L560 150 L240 150 z" fill="#000" opacity="0.34"/>
+  <g stroke="#fff" stroke-opacity="0.12" stroke-width="2" fill="none">
+    <path d="M0 34 L800 34"/>
+    <path d="M120 0 L268 150"/>
+    <path d="M680 0 L532 150"/>
   </g>
-  <rect width="800" height="500" fill="url(#v)"/>
-  <ellipse cx="400" cy="345" rx="250" ry="26" fill="#000" opacity="0.25"/>
-  <rect x="150" y="300" width="500" height="46" rx="4" fill="#fff" opacity="0.12"/>
-  <g fill="#fff" font-family="Georgia, serif" text-anchor="middle">
-    <text x="400" y="235" font-size="48" letter-spacing="1">Alhambra</text>
-    <text x="400" y="272" font-size="16" opacity="0.7" letter-spacing="4">FUNCTION VENUE</text>
+
+  <!-- side walls -->
+  <path d="M0 0 L240 150 L240 330 L0 500 z" fill="#000" opacity="0.30"/>
+  <path d="M800 0 L560 150 L560 330 L800 500 z" fill="#000" opacity="0.30"/>
+  <g stroke="#bff0dc" stroke-opacity="0.30" stroke-width="2"><line x1="-244.0" y1="150.0" x2="-124.0" y2="330.0"/><line x1="-210.0" y1="150.0" x2="-90.0" y2="330.0"/><line x1="-176.0" y1="150.0" x2="-56.0" y2="330.0"/><line x1="-142.0" y1="150.0" x2="-22.0" y2="330.0"/><line x1="-108.0" y1="150.0" x2="12.0" y2="330.0"/><line x1="-74.0" y1="150.0" x2="46.0" y2="330.0"/><line x1="-40.0" y1="150.0" x2="80.0" y2="330.0"/><line x1="-6.0" y1="150.0" x2="114.0" y2="330.0"/><line x1="28.0" y1="150.0" x2="148.0" y2="330.0"/><line x1="62.0" y1="150.0" x2="182.0" y2="330.0"/><line x1="96.0" y1="150.0" x2="216.0" y2="330.0"/><line x1="130.0" y1="150.0" x2="250.0" y2="330.0"/><line x1="164.0" y1="150.0" x2="284.0" y2="330.0"/><line x1="198.0" y1="150.0" x2="318.0" y2="330.0"/><line x1="232.0" y1="150.0" x2="352.0" y2="330.0"/><line x1="266.0" y1="150.0" x2="386.0" y2="330.0"/><line x1="300.0" y1="150.0" x2="420.0" y2="330.0"/><line x1="334.0" y1="150.0" x2="454.0" y2="330.0"/><line x1="368.0" y1="150.0" x2="488.0" y2="330.0"/><line x1="402.0" y1="150.0" x2="522.0" y2="330.0"/><line x1="436.0" y1="150.0" x2="556.0" y2="330.0"/><line x1="470.0" y1="150.0" x2="590.0" y2="330.0"/></g>
+  <g stroke="#bff0dc" stroke-opacity="0.30" stroke-width="2"><line x1="556.0" y1="150.0" x2="436.0" y2="330.0"/><line x1="590.0" y1="150.0" x2="470.0" y2="330.0"/><line x1="624.0" y1="150.0" x2="504.0" y2="330.0"/><line x1="658.0" y1="150.0" x2="538.0" y2="330.0"/><line x1="692.0" y1="150.0" x2="572.0" y2="330.0"/><line x1="726.0" y1="150.0" x2="606.0" y2="330.0"/><line x1="760.0" y1="150.0" x2="640.0" y2="330.0"/><line x1="794.0" y1="150.0" x2="674.0" y2="330.0"/><line x1="828.0" y1="150.0" x2="708.0" y2="330.0"/><line x1="862.0" y1="150.0" x2="742.0" y2="330.0"/><line x1="896.0" y1="150.0" x2="776.0" y2="330.0"/><line x1="930.0" y1="150.0" x2="810.0" y2="330.0"/><line x1="964.0" y1="150.0" x2="844.0" y2="330.0"/><line x1="998.0" y1="150.0" x2="878.0" y2="330.0"/><line x1="1032.0" y1="150.0" x2="912.0" y2="330.0"/><line x1="1066.0" y1="150.0" x2="946.0" y2="330.0"/><line x1="1100.0" y1="150.0" x2="980.0" y2="330.0"/><line x1="1134.0" y1="150.0" x2="1014.0" y2="330.0"/><line x1="1168.0" y1="150.0" x2="1048.0" y2="330.0"/><line x1="1202.0" y1="150.0" x2="1082.0" y2="330.0"/><line x1="1236.0" y1="150.0" x2="1116.0" y2="330.0"/><line x1="1270.0" y1="150.0" x2="1150.0" y2="330.0"/></g>
+
+  <!-- rear wall with arched windows -->
+  <rect x="240" y="150" width="320" height="180" fill="#fff" opacity="0.05"/>
+  <g>
+      <path d="M268 320 L268 214 q28 -34 56 0 L324 320 z" fill="#fff" opacity="0.30"/>
+      <path d="M268 320 L268 214 q28 -34 56 0 L324 320 z" fill="none" stroke="#fff" stroke-opacity="0.42" stroke-width="2"/>
+      <line x1="296" y1="192" x2="296" y2="320" stroke="#fff" stroke-opacity="0.34" stroke-width="1.6"/>
+      <line x1="268" y1="256" x2="324" y2="256" stroke="#fff" stroke-opacity="0.34" stroke-width="1.6"/>
+    </g>
+  <g>
+      <path d="M364 320 L364 214 q28 -34 56 0 L420 320 z" fill="#fff" opacity="0.30"/>
+      <path d="M364 320 L364 214 q28 -34 56 0 L420 320 z" fill="none" stroke="#fff" stroke-opacity="0.42" stroke-width="2"/>
+      <line x1="392" y1="192" x2="392" y2="320" stroke="#fff" stroke-opacity="0.34" stroke-width="1.6"/>
+      <line x1="364" y1="256" x2="420" y2="256" stroke="#fff" stroke-opacity="0.34" stroke-width="1.6"/>
+    </g>
+  <g>
+      <path d="M460 320 L460 214 q28 -34 56 0 L516 320 z" fill="#fff" opacity="0.30"/>
+      <path d="M460 320 L460 214 q28 -34 56 0 L516 320 z" fill="none" stroke="#fff" stroke-opacity="0.42" stroke-width="2"/>
+      <line x1="488" y1="192" x2="488" y2="320" stroke="#fff" stroke-opacity="0.34" stroke-width="1.6"/>
+      <line x1="460" y1="256" x2="516" y2="256" stroke="#fff" stroke-opacity="0.34" stroke-width="1.6"/>
+    </g>
+
+  <!-- chandeliers on the centre line -->
+  <g>
+      <circle cx="400.0" cy="180.4" r="25.3" fill="url(#lampalhambra)"/>
+      <line x1="400.0" y1="154.0" x2="400.0" y2="172.7" stroke="#ffe9b8" stroke-opacity="0.45" stroke-width="0.9"/>
+      <ellipse cx="400.0" cy="176.0" rx="14.3" ry="2.8" fill="#ffeec2" opacity="0.55"/>
+      <line x1="388.4" y1="176.0" x2="388.4" y2="180.7" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="0.8"/><circle cx="388.4" cy="180.7" r="1.1" fill="#fff3d0" opacity="0.85"/><line x1="392.3" y1="176.0" x2="392.3" y2="182.1" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="0.8"/><circle cx="392.3" cy="182.1" r="1.1" fill="#fff3d0" opacity="0.85"/><line x1="396.1" y1="176.0" x2="396.1" y2="183.4" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="0.8"/><circle cx="396.1" cy="183.4" r="1.1" fill="#fff3d0" opacity="0.85"/><line x1="400.0" y1="176.0" x2="400.0" y2="184.8" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="0.8"/><circle cx="400.0" cy="184.8" r="1.1" fill="#fff3d0" opacity="0.85"/><line x1="403.9" y1="176.0" x2="403.9" y2="183.4" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="0.8"/><circle cx="403.9" cy="183.4" r="1.1" fill="#fff3d0" opacity="0.85"/><line x1="407.7" y1="176.0" x2="407.7" y2="182.1" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="0.8"/><circle cx="407.7" cy="182.1" r="1.1" fill="#fff3d0" opacity="0.85"/><line x1="411.6" y1="176.0" x2="411.6" y2="180.7" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="0.8"/><circle cx="411.6" cy="180.7" r="1.1" fill="#fff3d0" opacity="0.85"/>
+    </g>
+  <g>
+      <circle cx="400.0" cy="126.0" r="46.0" fill="url(#lampalhambra)"/>
+      <line x1="400.0" y1="78.0" x2="400.0" y2="112.0" stroke="#ffe9b8" stroke-opacity="0.45" stroke-width="1.6"/>
+      <ellipse cx="400.0" cy="118.0" rx="26.0" ry="5.0" fill="#ffeec2" opacity="0.55"/>
+      <line x1="379.0" y1="118.0" x2="379.0" y2="126.5" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="1.4"/><circle cx="379.0" cy="126.5" r="2.0" fill="#fff3d0" opacity="0.85"/><line x1="386.0" y1="118.0" x2="386.0" y2="129.0" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="1.4"/><circle cx="386.0" cy="129.0" r="2.0" fill="#fff3d0" opacity="0.85"/><line x1="393.0" y1="118.0" x2="393.0" y2="131.5" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="1.4"/><circle cx="393.0" cy="131.5" r="2.0" fill="#fff3d0" opacity="0.85"/><line x1="400.0" y1="118.0" x2="400.0" y2="134.0" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="1.4"/><circle cx="400.0" cy="134.0" r="2.0" fill="#fff3d0" opacity="0.85"/><line x1="407.0" y1="118.0" x2="407.0" y2="131.5" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="1.4"/><circle cx="407.0" cy="131.5" r="2.0" fill="#fff3d0" opacity="0.85"/><line x1="414.0" y1="118.0" x2="414.0" y2="129.0" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="1.4"/><circle cx="414.0" cy="129.0" r="2.0" fill="#fff3d0" opacity="0.85"/><line x1="421.0" y1="118.0" x2="421.0" y2="126.5" stroke="#ffe9b8" stroke-opacity="0.6" stroke-width="1.4"/><circle cx="421.0" cy="126.5" r="2.0" fill="#fff3d0" opacity="0.85"/>
+    </g>
+
+  <!-- polished floor -->
+  <path d="M240 330 L560 330 L800 500 L0 500 z" fill="url(#flalhambra)"/>
+  <g stroke="#fff" stroke-opacity="0.10" stroke-width="1.6">
+    <line x1="240.0" y1="330" x2="-60.0" y2="500"/>
+    <line x1="293.3" y1="330" x2="93.0" y2="500"/>
+    <line x1="346.6" y1="330" x2="246.0" y2="500"/>
+    <line x1="399.9" y1="330" x2="399.0" y2="500"/>
+    <line x1="453.2" y1="330" x2="552.0" y2="500"/>
+    <line x1="506.5" y1="330" x2="705.0" y2="500"/>
+    <line x1="559.8" y1="330" x2="858.0" y2="500"/>
   </g>
-  <text x="400" y="440" fill="#fff" opacity="0.5" font-family="Georgia, serif" font-size="13" letter-spacing="4" text-anchor="middle">THE PLAYHOUSE COMPANY</text>
+  <!-- reflections of the windows and chandelier in the floor -->
+  <g fill="#fff" opacity="0.11">
+    <path d="M268 332 L324 332 L340 470 L256 470 z"/>
+    <path d="M364 332 L420 332 L458 470 L374 470 z"/>
+    <path d="M460 332 L516 332 L576 470 L492 470 z"/>
+  </g>
+  <path d="M382 332 L418 332 L442 500 L358 500 z" fill="#ffeec2" opacity="0.13"/>
+  <line x1="240" y1="330" x2="560" y2="330" stroke="#fff" stroke-opacity="0.20" stroke-width="2"/>
+  <rect width="800" height="500" fill="url(#vigalhambra)"/>
 </svg>

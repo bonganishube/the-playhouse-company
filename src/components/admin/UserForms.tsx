@@ -11,10 +11,10 @@ import { Alert, Button, Card, Field, inputClass } from "@/components/ui";
 const initial: AdminState = { ok: true };
 
 const STAFF_ROLES = [
-  { value: "STAFF", label: "Staff — read-only access and schedule export" },
-  { value: "VENUE_MANAGER", label: "Venue manager — approves bookings for assigned venues" },
-  { value: "FINANCE", label: "Finance — payments, receipts and financial reports" },
-  { value: "ADMIN", label: "Administrator — full control" },
+  { value: "STAFF", label: "Staff, read-only access and schedule export" },
+  { value: "VENUE_MANAGER", label: "Venue manager, approves bookings for assigned venues" },
+  { value: "FINANCE", label: "Finance, payments, receipts and financial reports" },
+  { value: "ADMIN", label: "Administrator, full control" },
 ];
 
 export function CreateStaffUser() {

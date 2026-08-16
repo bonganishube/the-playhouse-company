@@ -383,7 +383,7 @@ function MonthView({
                     key={r.id}
                     href={r.booking ? `/admin/bookings/${r.booking.id}` : "#"}
                     className="block truncate rounded-sm bg-brand-50 px-1 py-0.5 text-[10px] text-brand-800 hover:bg-brand-100"
-                    title={`${r.venue.name} — ${r.booking?.reference ?? ""}`}
+                    title={`${r.venue.name}, ${r.booking?.reference ?? ""}`}
                   >
                     {formatTime(r.startsAt, r.venue.timezone)} {r.venue.name}
                   </Link>

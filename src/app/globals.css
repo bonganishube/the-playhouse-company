@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /**
- * The Playhouse Company — booking platform theme.
+ * The Playhouse Company, booking platform theme.
  *
  * Burgundy and warm parchment, drawn from the Playhouse's own identity, with a
  * serif display face for headings and a humanist sans for interface text.
@@ -36,8 +36,17 @@
   --color-gold-500: #b08d3f;
   --color-gold-600: #8a6d1f;
 
-  --font-display: Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Footer yellow, from The Playhouse Company's own site. Dark text on these
+     clears WCAG AA comfortably; white text on them does not, so footer type
+     stays near-black throughout. */
+  --color-sunflower-400: #f9d73a;
+  --color-sunflower-500: #efc92b;
+
+  /* Montserrat throughout, as on The Playhouse Company's own site: the same
+     geometric sans carries both headings and body copy, distinguished by
+     weight rather than by a second typeface. */
+  --font-display: var(--font-montserrat), system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-montserrat), system-ui, -apple-system, sans-serif;
 }
 
 :root {
@@ -57,6 +66,84 @@ h2,
 h3,
 h4 {
   font-family: var(--font-display);
+  font-weight: 700;
+  /* Geometric sans set large needs its tracking pulled in slightly. */
+  letter-spacing: -0.01em;
+}
+
+/* Header band.
+ *
+ * Translucent rather than solid, so the hero photograph reads faintly through
+ * it and the two feel like one composition instead of a bar stacked on an
+ * image. Two offset purple glows over a dark base give the band depth; the
+ * blur and saturation lift keep white navigation type legible whatever is
+ * moving behind it in the slideshow.
+ *
+ * The colour is carried in the alpha layers, so this works over any frame:
+ * even the brightest foyer shot stays dark enough behind the type.
+ */
+.header-gradient {
+  position: relative;
+  isolation: isolate;
+}
+
+/*
+ * The tint, blur and fade live on a layer behind the content rather than on
+ * the header itself. Applied to the element, the mask would also fade its
+ * children, dimming the logo and navigation along with the background.
+ */
+.header-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(
+      120% 210% at 18% 140%,
+      rgba(96, 62, 146, 0.55) 0%,
+      rgba(96, 62, 146, 0) 62%
+    ),
+    radial-gradient(
+      105% 190% at 80% 130%,
+      rgba(158, 96, 190, 0.44) 0%,
+      rgba(158, 96, 190, 0) 64%
+    ),
+    /* Fades out at its foot so the band dissolves into the hero rather than
+       ending on a visible line. The tint stays near-opaque at nav height,
+       which is what keeps the type legible over any slideshow frame. */
+    linear-gradient(
+      180deg,
+      rgba(10, 7, 26, 0.92) 0%,
+      rgba(22, 16, 48, 0.84) 42%,
+      rgba(34, 24, 68, 0.6) 74%,
+      rgba(44, 31, 84, 0.18) 92%,
+      rgba(44, 31, 84, 0) 100%
+    );
+  backdrop-filter: blur(7px) saturate(130%);
+  -webkit-backdrop-filter: blur(7px) saturate(130%);
+  mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 74%,
+    rgba(0, 0, 0, 0.35) 92%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    180deg,
+    #000 0%,
+    #000 74%,
+    rgba(0, 0, 0, 0.35) 92%,
+    transparent 100%
+  );
+}
+
+/* Smooth scrolling for in-page anchors such as "back to top", suppressed for
+   readers who have asked for reduced motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 /* Focus ring consistent across the whole platform, for keyboard operators. */

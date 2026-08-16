@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="Venue placeholder">
+  <defs>
+    <linearGradient id="wroom503" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0a1c14"/>
+      <stop offset="45%" stop-color="#2c5c46"/>
+      <stop offset="100%" stop-color="#0a1c14"/>
+    </linearGradient>
+    <radialGradient id="poolroom503" cx="0.5" cy="0.54" r="0.5">
+      <stop offset="0%" stop-color="#cfffe6" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#cfffe6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="flroom503" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.62"/>
+    </linearGradient>
+    <linearGradient id="ceilroom503" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.62"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.06"/>
+    </linearGradient>
+    <radialGradient id="vigroom503" cx="0.5" cy="0.5" r="0.78">
+      <stop offset="55%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.55"/>
+    </radialGradient>
+    <radialGradient id="lamproom503" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#fff8e2" stop-opacity="0.95"/>
+      <stop offset="35%" stop-color="#ffe9b0" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#ffd98a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#wroom503)"/>
+  <rect width="800" height="500" fill="url(#poolroom503)"/>
+  <!-- ceiling with strip lights receding -->
+  <path d="M0 0 L800 0 L574 148 L226 148 z" fill="#000" opacity="0.40"/>
+  <g fill="#fff" opacity="0.16">
+    <rect x="264" y="120" width="272" height="7" rx="3"/>
+    <rect x="188" y="74" width="424" height="8" rx="4"/>
+    <rect x="96" y="22" width="608" height="9" rx="4"/>
+  </g>
+  <circle cx="400.0" cy="78.0" r="190.0" fill="url(#lamproom503)"/>
+
+  <!-- side walls -->
+  <path d="M0 0 L226 148 L226 336 L0 500 z" fill="#000" opacity="0.28"/>
+  <path d="M800 0 L574 148 L574 336 L800 500 z" fill="#000" opacity="0.28"/>
+
+  <!-- mirrored rear wall -->
+  <rect x="226" y="148" width="348" height="188" fill="#fff" opacity="0.15"/>
+  <rect x="226" y="148" width="348" height="188" fill="none" stroke="#fff" stroke-opacity="0.30" stroke-width="2.5"/>
+  <g stroke="#fff" stroke-opacity="0.16" stroke-width="1.6">
+    <line x1="342" y1="148" x2="342" y2="336"/>
+    <line x1="458" y1="148" x2="458" y2="336"/>
+  </g>
+  <!-- glancing reflections across the glass -->
+  <path d="M240 336 L346 148 L392 148 L286 336 z" fill="#fff" opacity="0.09"/>
+  <path d="M430 336 L536 148 L560 148 L454 336 z" fill="#fff" opacity="0.06"/>
+  <!-- the room reflected back: a faint second barre and floor line -->
+  <line x1="236" y1="286" x2="564" y2="286" stroke="#fff" stroke-opacity="0.20" stroke-width="2"/>
+
+  <!-- barre along the rear wall -->
+  <line x1="226" y1="292" x2="574" y2="292" stroke="#e8c48a" stroke-opacity="0.85" stroke-width="6" stroke-linecap="round"/>
+  <line x1="248" y1="292" x2="248" y2="336" stroke="#000" stroke-opacity="0.4" stroke-width="4"/>
+  <line x1="400" y1="292" x2="400" y2="336" stroke="#000" stroke-opacity="0.4" stroke-width="4"/>
+  <line x1="552" y1="292" x2="552" y2="336" stroke="#000" stroke-opacity="0.4" stroke-width="4"/>
+  <!-- barre continuing down the left wall, in perspective -->
+  <line x1="0" y1="352" x2="226" y2="292" stroke="#e8c48a" stroke-opacity="0.6" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- sprung floor -->
+  <path d="M226 336 L574 336 L800 500 L0 500 z" fill="url(#flroom503)"/>
+  <g stroke="#fff" stroke-opacity="0.09" stroke-width="1.8">
+    <line x1="226.0" y1="336" x2="-140.0" y2="500"/>
+    <line x1="264.6" y1="336" x2="-20.0" y2="500"/>
+    <line x1="303.2" y1="336" x2="100.0" y2="500"/>
+    <line x1="341.8" y1="336" x2="220.0" y2="500"/>
+    <line x1="380.4" y1="336" x2="340.0" y2="500"/>
+    <line x1="419.0" y1="336" x2="460.0" y2="500"/>
+    <line x1="457.6" y1="336" x2="580.0" y2="500"/>
+    <line x1="496.2" y1="336" x2="700.0" y2="500"/>
+    <line x1="534.8" y1="336" x2="820.0" y2="500"/>
+    <line x1="573.4" y1="336" x2="940.0" y2="500"/>
+  </g>
+  <line x1="226" y1="336" x2="574" y2="336" stroke="#fff" stroke-opacity="0.22" stroke-width="2"/>
+  <rect width="800" height="500" fill="url(#vigroom503)"/>
+</svg>

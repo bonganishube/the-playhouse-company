@@ -83,7 +83,7 @@ export default async function BookingPage({
         <div className="mb-6">
           <Alert tone="warning" title="Awaiting approval">
             Payment has been received and your dates are held. The booking becomes
-            final once our venue management team approves it — usually within two
+            final once our venue management team approves it, usually within two
             working days.
           </Alert>
         </div>
@@ -212,7 +212,7 @@ export default async function BookingPage({
                     {formatDateTime(payment.paidAt ?? payment.createdAt)}
                   </td>
                   <td className="px-5 py-2 font-mono text-xs">
-                    {payment.receiptNumber ?? "—"}
+                    {payment.receiptNumber ?? ", "}
                   </td>
                   <td className="px-5 py-2">{payment.gateway}</td>
                   <td className="px-5 py-2 text-right tabular">

@@ -235,7 +235,7 @@ export async function initiatePayment(
     reference,
     amountCents: outstandingCents,
     currency: booking.currency,
-    description: `Venue hire — ${venueNames}`,
+    description: `Venue hire, ${venueNames}`,
     bookingReference: booking.reference,
     customerName: booking.contactName,
     customerEmail: booking.contactEmail,
@@ -244,7 +244,7 @@ export async function initiatePayment(
     notifyUrl: `${env.APP_URL}/api/payments/webhook/${gatewayId.toLowerCase()}`,
   });
 
-  // The updated row is returned, not the one created above — callers need the
+  // The updated row is returned, not the one created above, callers need the
   // gateway reference and the PENDING status, both of which are set here.
   const [pending] = await prisma.$transaction([
     prisma.payment.update({
@@ -302,7 +302,7 @@ export async function rebuildCheckout(bookingId: string) {
     reference: payment.reference,
     amountCents: toCents(payment.amount),
     currency: payment.currency,
-    description: `Venue hire — ${venueNames}`,
+    description: `Venue hire, ${venueNames}`,
     bookingReference: booking.reference,
     customerName: booking.contactName,
     customerEmail: booking.contactEmail,
@@ -349,7 +349,7 @@ export async function settlePayment(
     return { handled: false, reason: "Unknown payment reference" };
   }
 
-  // Everything inbound is recorded, verified or not — this is the audit trail.
+  // Everything inbound is recorded, verified or not, this is the audit trail.
   await prisma.paymentEvent.create({
     data: {
       paymentId: payment.id,
@@ -496,7 +496,7 @@ async function applySuccessfulPayment(
 }
 
 /**
- * Side effects that follow a state change — calendar synchronisation and
+ * Side effects that follow a state change, calendar synchronisation and
  * customer correspondence. Deliberately outside the transaction, and
  * individually guarded: a mail server outage must not roll back a paid booking.
  */
@@ -539,7 +539,7 @@ async function safely(label: string, fn: () => Promise<unknown>) {
  *
  * Called when a customer returns from the payment page, and from the
  * maintenance sweep. This is what prevents a lost or delayed webhook from
- * leaving a paid booking unconfirmed — the customer's money has moved, so the
+ * leaving a paid booking unconfirmed, the customer's money has moved, so the
  * booking must follow regardless of whether the callback arrived.
  *
  * Settlement runs through the same idempotent path as a webhook, so a payment
@@ -732,7 +732,7 @@ export async function cancelBooking(
 }
 
 /**
- * Record a payment received outside the gateways — typically an EFT against
+ * Record a payment received outside the gateways, typically an EFT against
  * the deposit balance, captured by the finance team.
  */
 export async function recordManualPayment(

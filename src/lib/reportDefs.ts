@@ -11,7 +11,7 @@ import {
 /**
  * Report catalogue.
  *
- * Each report is declared once — title, columns and loader — and consumed by
+ * Each report is declared once, title, columns and loader, and consumed by
  * both the on-screen table and the CSV export, so the two can never drift.
  */
 

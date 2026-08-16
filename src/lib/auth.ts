@@ -119,8 +119,8 @@ export async function getSession(): Promise<SessionUser | null> {
 
 /**
  * Session re-checked against the database. Use where a stale role or a
- * deactivated account would be consequential — i.e. all administrative
- * actions — since the JWT itself cannot be revoked before it expires.
+ * deactivated account would be consequential, i.e. all administrative
+ * actions. Since the JWT itself cannot be revoked before it expires.
  */
 export async function getVerifiedSession(): Promise<SessionUser | null> {
   const session = await getSession();

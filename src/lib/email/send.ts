@@ -8,7 +8,7 @@ import type { BookingEmailData } from "./templates";
 
 /**
  * Notification despatch. Each function loads exactly what its template needs
- * and is safe to call more than once — booking.ts invokes these outside the
+ * and is safe to call more than once, booking.ts invokes these outside the
  * database transaction, where a retry is possible.
  */
 
@@ -58,7 +58,7 @@ export async function sendBookingConfirmedEmail(bookingId: string) {
   const ics = buildIcs(
     booking.reservations.map((r) => ({
       uid: `${r.id}@playhousecompany.com`,
-      summary: `${booking.eventTitle ?? "Venue hire"} — ${r.venue.name}`,
+      summary: `${booking.eventTitle ?? "Venue hire"}, ${r.venue.name}`,
       description: `Booking reference ${booking.reference}`,
       location: r.venue.name,
       startsAt: r.startsAt,

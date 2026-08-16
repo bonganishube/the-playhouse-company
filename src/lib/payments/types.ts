@@ -7,7 +7,7 @@ import type { GatewayId } from "@/generated/prisma/enums";
  */
 
 export type CheckoutRequest = {
-  /** Our payment reference — echoed back by the gateway for reconciliation. */
+  /** Our payment reference, echoed back by the gateway for reconciliation. */
   reference: string;
   amountCents: number;
   currency: string;
@@ -63,7 +63,7 @@ export type WebhookResult = {
 export interface PaymentGateway {
   readonly id: GatewayId;
   readonly displayName: string;
-  /** False when credentials are absent — checkout must not be offered. */
+  /** False when credentials are absent, checkout must not be offered. */
   isConfigured(): boolean;
   createCheckout(request: CheckoutRequest): Promise<CheckoutResult>;
   /**
@@ -75,8 +75,8 @@ export interface PaymentGateway {
   /**
    * Ask the provider directly what happened to a transaction.
    *
-   * Webhooks get lost — a deploy mid-flight, an outage, a misconfigured
-   * endpoint — and a customer whose payment succeeded should not be left with
+   * Webhooks get lost, a deploy mid-flight, an outage, a misconfigured
+   * endpoint. And a customer whose payment succeeded should not be left with
    * an unconfirmed booking. Where a provider supports lookup, this closes that
    * gap: it is called when the customer returns from the payment page, and can
    * also be driven from the maintenance sweep.

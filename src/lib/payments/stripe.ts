@@ -11,7 +11,7 @@ import {
 } from "./types";
 
 /**
- * Stripe — demonstration and development gateway.
+ * Stripe, demonstration and development gateway.
  *
  * Scope: Stripe test mode requires no merchant onboarding, so the complete
  * payment lifecycle can be demonstrated immediately. The production
@@ -37,7 +37,7 @@ function stripe(): Stripe {
     // together when upgrading.
     apiVersion: "2026-07-29.dahlia",
     appInfo: {
-      name: "The Playhouse Company — Venue Booking Platform",
+      name: "The Playhouse Company. Venue Booking Platform",
     },
   });
   return client;
@@ -67,7 +67,7 @@ export const stripeGateway: PaymentGateway = {
             customerName: request.customerName,
           },
           payment_intent_data: {
-            description: `${request.description} — ${request.bookingReference}`,
+            description: `${request.description}, ${request.bookingReference}`,
             metadata: {
               paymentReference: request.reference,
               bookingReference: request.bookingReference,
@@ -157,7 +157,7 @@ export const stripeGateway: PaymentGateway = {
     try {
       const session = await stripe().checkout.sessions.retrieve(gatewayReference);
       return {
-        // Authenticated server-to-server call — the response is trustworthy.
+        // Authenticated server-to-server call, the response is trustworthy.
         verified: true,
         status: sessionStatus(session),
         reference:

@@ -11,7 +11,7 @@ import {
 } from "./types";
 
 /**
- * Yoco — hosted Checkout API.
+ * Yoco, hosted Checkout API.
  *
  * Checkout: POST /checkouts returns a redirectUrl for the customer.
  * Webhooks are signed in the Standard Webhooks format: the signed content is

@@ -14,7 +14,7 @@ import {
 
 /**
  * Statuses that occupy a venue. Mirrors the WHERE clause of the
- * `reservations_no_overlap` exclusion constraint — the two must stay in step,
+ * `reservations_no_overlap` exclusion constraint, the two must stay in step,
  * so both are defined from this single list.
  */
 export const OCCUPYING_STATUSES = [

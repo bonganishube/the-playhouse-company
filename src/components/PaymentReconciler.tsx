@@ -46,7 +46,7 @@ export function PaymentReconciler({ reference }: { reference: string }) {
           }
         }
       } catch {
-        // Network hiccup — the next attempt will try again.
+        // Network hiccup, the next attempt will try again.
       } finally {
         running.current = false;
         setAttempts((n) => n + 1);

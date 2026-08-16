@@ -11,7 +11,7 @@ import {
 } from "./types";
 
 /**
- * Paystack — hosted checkout.
+ * Paystack, hosted checkout.
  *
  * Checkout: POST /transaction/initialize returns an authorization_url.
  * Webhooks carry an x-paystack-signature header: HMAC-SHA512 of the raw body

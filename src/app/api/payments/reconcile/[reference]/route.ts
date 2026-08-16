@@ -31,7 +31,7 @@ export async function POST(
     return NextResponse.json({ error: "Not permitted" }, { status: 403 });
   }
 
-  // Nothing in flight — the webhook already did its work.
+  // Nothing in flight, the webhook already did its work.
   if (booking.status !== "PENDING_PAYMENT") {
     return NextResponse.json({ status: booking.status, reconciled: false });
   }

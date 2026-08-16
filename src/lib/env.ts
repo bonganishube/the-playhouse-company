@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Environment configuration.
  *
- * Only DATABASE_URL and AUTH_SECRET are strictly required — every integration
+ * Only DATABASE_URL and AUTH_SECRET are strictly required, every integration
  * (payment gateways, Microsoft Graph, SMTP) degrades to a safe local mode when
  * its credentials are absent, so the platform is runnable before The Playhouse
  * Company's merchant and tenant accounts are provisioned.
@@ -43,7 +43,7 @@ const schema = z.object({
   IKHOKHA_APP_ID: z.string().default(""),
   IKHOKHA_APP_SECRET: z.string().default(""),
 
-  // Demonstration gateway — see src/lib/payments/stripe.ts.
+  // Demonstration gateway, see src/lib/payments/stripe.ts.
   STRIPE_SECRET_KEY: z.string().default(""),
   STRIPE_WEBHOOK_SECRET: z.string().default(""),
 

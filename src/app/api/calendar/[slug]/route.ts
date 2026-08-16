@@ -72,7 +72,7 @@ export async function GET(
           ? ("CONFIRMED" as const)
           : ("TENTATIVE" as const),
     })),
-    `${venue.name} — The Playhouse Company`,
+    `${venue.name}. The Playhouse Company`,
   );
 
   return new NextResponse(ics, {

@@ -175,7 +175,7 @@ export default async function AdminBookingsPage({
                         <p key={r.id} className="text-xs">
                           <span className="text-ink-900">{r.venue.name}</span>
                           <span className="text-ink-500">
-                            {" — "}
+                            {", "}
                             {formatRange(r.startsAt, r.endsAt, r.venue.timezone)}
                           </span>
                         </p>
@@ -190,7 +190,7 @@ export default async function AdminBookingsPage({
                           {formatCents(outstanding, booking.currency)}
                         </span>
                       ) : (
-                        <span className="text-ink-500">—</span>
+                        <span className="text-ink-500">, </span>
                       )}
                     </td>
                     <td className="px-4 py-3 align-top">

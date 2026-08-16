@@ -62,7 +62,7 @@ export default async function VenuePage({ params }: PageProps<"/venues/[slug]">)
         image={hero?.url ?? "/hero/playhouse.svg"}
       />
 
-      <div className="mx-auto max-w-7xl px-4 py-10">
+      <div className="mx-auto max-w-6xl px-4 py-10">
       <nav className="mb-6 text-sm text-ink-500">
         <Link href="/venues" className="hover:text-brand-600">
           Venues

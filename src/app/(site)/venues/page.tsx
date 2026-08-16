@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { PageHero } from "@/components/PageHero";
+import { PageHero, VENUE_PHOTOGRAPHY } from "@/components/PageHero";
 import { formatMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
 import { minutesToClock } from "@/lib/time";
@@ -33,11 +33,12 @@ export default async function VenuesPage() {
   return (
     <>
       <PageHero
+        images={VENUE_PHOTOGRAPHY}
         title="Venues for hire"
         lead="From the Opera Theatre to a rehearsal room, The Playhouse Company's spaces are available for performance, conference, function and rehearsal hire. Select a venue to check live availability and reserve your dates."
       />
 
-      <div className="mx-auto max-w-7xl px-4 py-10">
+      <div className="mx-auto max-w-6xl px-4 py-10">
 
       <p className="mb-8 border-l-4 border-parchment-400 bg-white px-4 py-3 text-sm text-ink-700">
         All rates are <strong>inclusive of VAT</strong> and cover venue hire only.
@@ -89,24 +90,27 @@ export default async function VenuesPage() {
                           className="object-cover"
                         />
                       )}
+                      {/* Capacity overlaid on the image, where it reads as a
+                          property of the space rather than another line of
+                          copy. Omitted entirely when unknown, rather than
+                          showing a placeholder figure. */}
+                      {venue.capacity && (
+                        <span className="absolute top-3 right-3 rounded-full bg-black/65 px-3 py-1 text-xs font-semibold text-white backdrop-blur-[2px]">
+                          {venue.capacity.toLocaleString("en-ZA")}
+                          <span className="font-normal text-white/75"> capacity</span>
+                        </span>
+                      )}
                     </Link>
 
                     <div className="flex flex-1 flex-col p-4">
-                      <div className="flex items-baseline justify-between gap-2">
-                        <h3 className="text-lg">
-                          <Link
-                            href={`/venues/${venue.slug}`}
-                            className="hover:text-brand-600"
-                          >
-                            {venue.name}
-                          </Link>
-                        </h3>
-                        {venue.capacity && (
-                          <span className="text-xs whitespace-nowrap text-ink-500">
-                            {venue.capacity.toLocaleString("en-ZA")} capacity
-                          </span>
-                        )}
-                      </div>
+                      <h3 className="text-lg">
+                        <Link
+                          href={`/venues/${venue.slug}`}
+                          className="hover:text-brand-600"
+                        >
+                          {venue.name}
+                        </Link>
+                      </h3>
 
                       <p className="mt-1 line-clamp-2 text-sm text-ink-500">
                         {venue.shortInfo ?? venue.description}

@@ -154,7 +154,7 @@ export async function deleteEvent(
 }
 
 /**
- * Confirm the app registration works and the mailbox is reachable — surfaced
+ * Confirm the app registration works and the mailbox is reachable, surfaced
  * as a connection test in the admin console.
  */
 export async function testConnection(

@@ -12,8 +12,8 @@ import {
 /**
  * Local development and demonstration gateway.
  *
- * Presents a simulated payment page so the complete booking lifecycle —
- * checkout, callback, confirmation, receipt — can be exercised before The
+ * Presents a simulated payment page so the complete booking lifecycle of
+ * checkout, callback, confirmation and receipt can be exercised before The
  * Playhouse Company's merchant accounts are provisioned. Callbacks it issues
  * are signed with AUTH_SECRET so the verification path under test is the same
  * one the real gateways use.

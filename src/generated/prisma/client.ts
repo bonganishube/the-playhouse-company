@@ -116,6 +116,18 @@ export type AuditLog = Prisma.AuditLogModel
  */
 export type Setting = Prisma.SettingModel
 /**
+ * Model NewsletterSubscriber
+ * Newsletter sign-ups from the site footer.
+ * 
+ * POPIA: this is personal information collected for direct marketing, which
+ * requires the data subject's consent and a means of withdrawing it. Consent
+ * is captured explicitly at sign-up; `unsubscribedAt` records withdrawal
+ * rather than deleting the row, so a later re-marketing attempt can be
+ * checked against it. Confirm the retention period with The Playhouse
+ * Company's information officer before go-live.
+ */
+export type NewsletterSubscriber = Prisma.NewsletterSubscriberModel
+/**
  * Model EmailLog
  * Outbound email log — proof of despatch for confirmations and receipts.
  */

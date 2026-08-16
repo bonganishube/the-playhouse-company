@@ -53,7 +53,7 @@ export function activeGateway(): PaymentGateway {
   return gateway;
 }
 
-/** Providers with credentials present — surfaced in the admin console. */
+/** Providers with credentials present, surfaced in the admin console. */
 export function configuredGateways(): PaymentGateway[] {
   return Object.values(REGISTRY).filter((g): g is PaymentGateway =>
     Boolean(g?.isConfigured()),

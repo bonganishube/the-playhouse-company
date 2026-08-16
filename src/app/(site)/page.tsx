@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { PageHero } from "@/components/PageHero";
+import { PageHero, VENUE_PHOTOGRAPHY } from "@/components/PageHero";
 import { ButtonLink } from "@/components/ui";
 import { formatMoney } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
@@ -27,6 +27,7 @@ export default async function HomePage() {
     <>
       <PageHero
         size="tall"
+        images={VENUE_PHOTOGRAPHY}
         eyebrow="Durban · Since 1935"
         title="Hire a stage worthy of the occasion."
         lead="From the Opera Theatre to a rehearsal room, The Playhouse Company's venues are available for performance, conference, function and rehearsal hire. Check availability, reserve your dates and pay securely online."
@@ -45,12 +46,12 @@ export default async function HomePage() {
         </div>
       </PageHero>
 
-      <section className="mx-auto max-w-7xl px-4 py-14">
+      <section className="mx-auto max-w-6xl px-4 py-14">
         <div className="mb-8 flex items-end justify-between gap-4">
           <div>
             <h2 className="text-2xl">Our venues</h2>
             <p className="mt-1 text-sm text-ink-500">
-              Rates are inclusive of VAT and cover venue hire only — technical
+              Rates are inclusive of VAT and cover venue hire only. Technical
               staffing, equipment and catering are quoted separately.
             </p>
           </div>
@@ -81,16 +82,15 @@ export default async function HomePage() {
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   )}
+                  {venue.capacity && (
+                    <span className="absolute top-3 right-3 rounded-full bg-black/65 px-3 py-1 text-xs font-semibold text-white backdrop-blur-[2px]">
+                      {venue.capacity.toLocaleString("en-ZA")}
+                      <span className="font-normal text-white/75"> capacity</span>
+                    </span>
+                  )}
                 </div>
                 <div className="p-4">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="text-lg text-ink-900">{venue.name}</h3>
-                    {venue.capacity && (
-                      <span className="text-xs text-ink-500 whitespace-nowrap">
-                        {venue.capacity.toLocaleString("en-ZA")} seats
-                      </span>
-                    )}
-                  </div>
+                  <h3 className="text-lg text-ink-900">{venue.name}</h3>
                   <p className="mt-1 line-clamp-2 text-sm text-ink-500">
                     {venue.shortInfo ?? venue.description}
                   </p>
@@ -120,7 +120,7 @@ export default async function HomePage() {
           {[
             {
               title: "Live availability",
-              body: "Every venue's calendar is live. Slots already taken — including turnaround time between events — are never offered twice.",
+              body: "Every venue's calendar is live. Slots already taken, including turnaround time between events, are never offered twice.",
             },
             {
               title: "Secure payment",

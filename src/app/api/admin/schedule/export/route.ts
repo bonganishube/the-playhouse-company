@@ -10,7 +10,7 @@ import { formatDate, formatTime } from "@/lib/time";
 /**
  * Schedule export for authorised staff, as CSV for spreadsheet use or as an
  * iCalendar file that can be imported into Outlook, Google Calendar or any
- * other client — including an on-premises Exchange organisation that Microsoft
+ * other client. Including an on-premises Exchange organisation that Microsoft
  * Graph cannot reach.
  */
 export async function GET(request: Request) {
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
     const ics = buildIcs(
       reservations.map((r) => ({
         uid: `${r.id}@playhousecompany.com`,
-        summary: `${r.venue.name} — ${r.booking?.eventTitle ?? r.booking?.contactName ?? "Reserved"}`,
+        summary: `${r.venue.name}. ${r.booking?.eventTitle ?? r.booking?.contactName ?? "Reserved"}`,
         description: [
           r.booking ? `Reference: ${r.booking.reference}` : null,
           r.booking ? `Contact: ${r.booking.contactName} (${r.booking.contactEmail})` : null,

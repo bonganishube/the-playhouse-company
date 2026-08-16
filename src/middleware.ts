@@ -5,7 +5,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * possible.
  *
  * Everything except /embed is denied framing outright. The /embed routes are
- * framable, but only by the origins listed in EMBED_ALLOWED_ORIGINS — so The
+ * framable, but only by the origins listed in EMBED_ALLOWED_ORIGINS, so The
  * Playhouse Company's own website can host the booking portal while a third
  * party cannot frame it to mount a clickjacking attack against customers.
  */
@@ -26,12 +26,20 @@ export function middleware(request: NextRequest) {
   const frameAncestors =
     isEmbed && allowed.length > 0 ? `'self' ${allowed.join(" ")}` : "'none'";
 
+  // React's development build uses eval() for debugging features such as
+  // reconstructing call stacks. It never does so in production, so the
+  // allowance is confined to development and the shipped policy stays strict.
+  const scriptSrc =
+    process.env.NODE_ENV === "production"
+      ? "script-src 'self' 'unsafe-inline'"
+      : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
+
   response.headers.set(
     "Content-Security-Policy",
     [
       "default-src 'self'",
       // Next.js injects inline bootstrap scripts and Tailwind inline styles.
-      "script-src 'self' 'unsafe-inline'",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",

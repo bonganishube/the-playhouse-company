@@ -80,7 +80,7 @@ export const payfast: PaymentGateway = {
   async createCheckout(request: CheckoutRequest): Promise<CheckoutResult> {
     const { first, last } = splitName(request.customerName);
 
-    // Field order matters — this is the order signed and submitted.
+    // Field order matters, this is the order signed and submitted.
     const fields: Record<string, string> = {
       merchant_id: env.PAYFAST_MERCHANT_ID,
       merchant_key: env.PAYFAST_MERCHANT_KEY,
@@ -122,7 +122,7 @@ export const payfast: PaymentGateway = {
       raw: payload,
     };
 
-    // 1. Signature — recomputed over the fields in the order received.
+    // 1. Signature, recomputed over the fields in the order received.
     const received = payload.signature ?? "";
     const expected = signature(
       payload,

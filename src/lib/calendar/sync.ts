@@ -13,7 +13,7 @@ import { createEvent, deleteEvent, GraphNotConfiguredError } from "./graph";
  * synchronisation idempotent and cancellation exact.
  *
  * When Graph is not configured the platform records that the sync was skipped
- * and continues — Outlook is a projection of the booking record, never its
+ * and continues. Outlook is a projection of the booking record, never its
  * source of truth, so the booking itself is unaffected.
  */
 
@@ -37,7 +37,7 @@ export async function syncBookingToCalendar(bookingId: string): Promise<void> {
         venue.outlookMailbox,
         venue.outlookCalendarId,
         {
-          subject: `${booking.eventTitle ?? "Venue hire"} — ${booking.reference}`,
+          subject: `${booking.eventTitle ?? "Venue hire"}, ${booking.reference}`,
           body: buildEventBody(booking, venue.name),
           startsAt: reservation.startsAt,
           endsAt: reservation.endsAt,
@@ -93,8 +93,8 @@ export async function removeBookingFromCalendar(
 }
 
 /**
- * Re-drive synchronisation for confirmed bookings that have no Outlook event —
- * used to recover after a Graph outage. Exposed via the maintenance endpoint.
+ * Re-drive synchronisation for confirmed bookings that have no Outlook event.
+ * Used to recover after a Graph outage. Exposed via the maintenance endpoint.
  */
 export async function resyncPendingCalendarEvents(): Promise<number> {
   if (!outlookConfigured()) return 0;
@@ -135,9 +135,9 @@ function buildEventBody(
     ["Venue", venueName],
     ["Contact", booking.contactName],
     ["Email", booking.contactEmail],
-    ["Telephone", booking.contactPhone ?? "—"],
-    ["Organisation", booking.organisation ?? "—"],
-    ["Purpose", booking.purpose ?? "—"],
+    ["Telephone", booking.contactPhone ?? ", "],
+    ["Organisation", booking.organisation ?? ", "],
+    ["Purpose", booking.purpose ?? ", "],
   ];
   return `<table>${rows
     .map(

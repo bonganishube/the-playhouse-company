@@ -1,5 +1,5 @@
 /**
- * The Playhouse Company — booking portal embed loader.
+ * The Playhouse Company, booking portal embed loader.
  *
  * Drop this onto any page of playhousecompany.com to host the booking portal:
  *
@@ -37,7 +37,7 @@
 
     var iframe = document.createElement("iframe");
     iframe.src = origin + path;
-    iframe.title = "The Playhouse Company — venue bookings";
+    iframe.title = "The Playhouse Company, venue bookings";
     iframe.loading = "lazy";
     iframe.style.width = "100%";
     iframe.style.border = "0";

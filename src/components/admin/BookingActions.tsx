@@ -107,7 +107,7 @@ export function PaymentPanel({
     <Card className="p-5">
       <h2 className="text-lg">Record a payment</h2>
       <p className="mt-1 text-sm text-ink-500">
-        For funds received outside the online gateways — typically an EFT against the
+        For funds received outside the online gateways, typically an EFT against the
         outstanding balance of {outstandingLabel}.
       </p>
 

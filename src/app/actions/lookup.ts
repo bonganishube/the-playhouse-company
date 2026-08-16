@@ -8,7 +8,7 @@ import { formatRange } from "@/lib/time";
  * Booking lookup for customers who are not signed in.
  *
  * Requires both the booking reference and the email address it was made
- * under, and returns only a read-only summary — it never establishes a
+ * under, and returns only a read-only summary, it never establishes a
  * session, so knowing a reference cannot be used to take over an account.
  */
 

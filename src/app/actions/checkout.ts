@@ -72,8 +72,8 @@ export async function checkoutAction(
             "An account exists for that email address but is not active. Please contact us.",
         };
       }
-      // An existing account is never silently signed into from a guest form —
-      // that would let anyone assume it by typing the address.
+      // An existing account is never silently signed into from a guest form.
+      // That would let anyone assume it by typing the address.
       return {
         ok: false,
         message:

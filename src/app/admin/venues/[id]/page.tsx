@@ -115,14 +115,14 @@ export default async function AdminVenueDetail({
             <h2 className="mb-1 text-lg">Calendar subscription</h2>
             <p className="mb-3 text-sm text-ink-500">
               {outlookConfigured()
-                ? "Microsoft Graph synchronisation is active. This feed is an additional, read-only subscription for clients that cannot use Graph — including an on-premises Exchange organisation."
+                ? "Microsoft Graph synchronisation is active. This feed is an additional, read-only subscription for clients that cannot use Graph, including an on-premises Exchange organisation."
                 : "Microsoft Graph is not configured. Subscribe Outlook to this URL to receive this venue's schedule."}
             </p>
             <code className="block overflow-x-auto border border-parchment-300 bg-parchment-100 p-2 text-xs">
               {feedUrl(venue.slug, venue.id)}
             </code>
             <p className="mt-2 text-xs text-ink-500">
-              Treat this URL as confidential — anyone holding it can read this
+              Treat this URL as confidential, anyone holding it can read this
               venue&apos;s schedule.
             </p>
           </Card>

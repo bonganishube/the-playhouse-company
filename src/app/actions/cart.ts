@@ -113,7 +113,7 @@ export async function addDaysToCartAction(
     // Some dates were secured; the customer must see which were not.
     return {
       ok: false,
-      message: `${held} date${held === 1 ? "" : "s"} added. Could not add — ${failures.join("; ")}`,
+      message: `${held} date${held === 1 ? "" : "s"} added. Could not add, ${failures.join("; ")}`,
     };
   }
 

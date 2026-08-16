@@ -39,7 +39,7 @@ export async function getOrCreateCart(userId?: string) {
   return cart;
 }
 
-/** The current cart without creating one — for read-only paths. */
+/** The current cart without creating one, for read-only paths. */
 export async function findCart() {
   const store = await cookies();
   const sessionId = store.get(CART_COOKIE)?.value;
@@ -70,7 +70,7 @@ export type CartView = {
   lines: CartLine[];
   subtotalCents: number;
   currency: string;
-  /** Earliest hold expiry across the cart — drives the countdown in the UI. */
+  /** Earliest hold expiry across the cart, drives the countdown in the UI. */
   expiresAt: Date | null;
   requiresApproval: boolean;
 };
@@ -132,7 +132,7 @@ export type AddToCartResult =
  * Place a hold on a venue slot.
  *
  * The slot is validated against every venue rule first, but the hold is only
- * genuinely secured when the insert succeeds — the exclusion constraint is
+ * genuinely secured when the insert succeeds, the exclusion constraint is
  * what resolves two customers racing for the same slot.
  */
 export async function addToCart(

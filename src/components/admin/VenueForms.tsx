@@ -102,7 +102,7 @@ export function VenueForm({ venue }: { venue: VenueFormValues }) {
       <Card className="p-5">
         <h2 className="mb-1 text-lg">Category and tariff</h2>
         <p className="mb-4 text-sm text-ink-500">
-          Rates are <strong>VAT-inclusive</strong> — enter the figure the customer
+          Rates are <strong>VAT-inclusive</strong>, enter the figure the customer
           pays. A venue is sold either by the day or by the hour, never both;
           the basis determines which booking interface customers are shown.
           Existing bookings keep the rate captured when they were made, so a
@@ -124,7 +124,7 @@ export function VenueForm({ venue }: { venue: VenueFormValues }) {
               onChange={(event) => setRateBasis(event.target.value)}
               className={inputClass}
             >
-              <option value="DAILY">The day — fixed daily rate</option>
+              <option value="DAILY">The day, fixed daily rate</option>
               <option value="HOURLY">The hour</option>
             </select>
           </Field>
@@ -414,7 +414,7 @@ export function ClosuresPanel({
           <input
             name="reason"
             required
-            placeholder="Heritage Day — venue closed"
+            placeholder="Heritage Day, venue closed"
             className={inputClass}
           />
         </Field>
