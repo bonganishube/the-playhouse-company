@@ -1,0 +1,494 @@
+// The Playhouse Company — Venue Booking Platform
+// Prisma schema. Postgres 17.
+//
+// Availability model note (important):
+// A single `Reservation` table is the sole source of truth for venue occupancy.
+// Cart holds, bookings awaiting payment/approval and confirmed bookings are all
+// rows in this table, differentiated by `status`. This lets Postgres enforce
+// non-overlap for ALL of them with one GiST exclusion constraint (see
+// migrations/.../exclusion_constraint.sql) rather than relying on app-level
+// checks, which race under concurrency.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+// Connection URL lives in prisma.config.ts (CLI) and is supplied to
+// PrismaClient at runtime via the @prisma/adapter-pg driver adapter.
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CUSTOMER
+  STAFF // read-only operational access + schedule export
+  VENUE_MANAGER // approves bookings for assigned venues
+  FINANCE // payments, refunds, financial reports
+  ADMIN // full control incl. user + venue management
+}
+
+enum ReservationStatus {
+  HELD // in a shopping cart, expires at holdExpiresAt
+  PENDING_PAYMENT // checked out, awaiting gateway confirmation
+  PENDING_APPROVAL // paid or reserved, awaiting administrative approval
+  CONFIRMED // final
+  CANCELLED
+  REJECTED // approval denied
+  EXPIRED // hold lapsed
+}
+
+enum BookingStatus {
+  PENDING_PAYMENT
+  PENDING_APPROVAL
+  CONFIRMED
+  CANCELLED
+  REJECTED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  INITIATED
+  PENDING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentPurpose {
+  FULL
+  DEPOSIT
+  BALANCE
+}
+
+enum GatewayId {
+  PAYFAST
+  YOCO
+  PAYSTACK
+  IKHOKHA
+  /// Demonstration and development only. Stripe test mode requires no merchant
+  /// onboarding, so the full payment lifecycle can be shown before The
+  /// Playhouse Company's state-registered merchant accounts are provisioned.
+  /// Not part of the production integration path.
+  STRIPE
+  EFT // manual / offline bank transfer, captured by FINANCE
+  MOCK // local development, no external service
+}
+
+enum RateKind {
+  HOURLY
+  DAILY
+}
+
+/// How a venue is sold. Drawn from The Playhouse Company's fixed tariff
+/// schedule, where theatres and function venues carry a day rate only, and
+/// rehearsal rooms and the recording studio an hourly rate only. This governs
+/// both pricing and which booking interface the customer is shown.
+enum RateBasis {
+  HOURLY
+  DAILY
+}
+
+/// Grouping used on the public venue listing, mirroring the tariff schedule.
+enum VenueCategory {
+  THEATRE
+  FUNCTION_VENUE
+  REHEARSAL_VENUE
+  RECORDING_STUDIO
+}
+
+enum BookingWorkflow {
+  INSTANT // confirmed automatically on successful payment
+  APPROVAL_REQUIRED // requires administrative approval before final confirmation
+}
+
+enum PaymentPolicy {
+  FULL_UPFRONT
+  DEPOSIT_ALLOWED
+}
+
+// ---------------------------------------------------------------------------
+// Identity & access
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String?
+  fullName     String
+  phone        String?
+  organisation String?
+  role         Role     @default(CUSTOMER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bookings      Booking[]
+  carts         Cart[]
+  managedVenues VenueManager[]
+  auditLogs     AuditLog[]
+
+  @@index([role])
+  @@map("users")
+}
+
+/// Assigns a VENUE_MANAGER to the venues they may approve bookings for.
+model VenueManager {
+  id      String @id @default(cuid())
+  userId  String
+  venueId String
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, venueId])
+  @@map("venue_managers")
+}
+
+// ---------------------------------------------------------------------------
+// Venues
+// ---------------------------------------------------------------------------
+
+model Venue {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String  @db.Text
+  shortInfo   String?
+  capacity    Int?
+  location    String?
+  timezone    String  @default("Africa/Johannesburg")
+  isActive    Boolean @default(true)
+  sortOrder   Int     @default(0)
+
+  category  VenueCategory @default(THEATRE)
+  /// Whether this venue is sold by the hour or by the day. A venue carries
+  /// exactly one active rate of the matching kind.
+  rateBasis RateBasis     @default(HOURLY)
+
+  // Booking rules
+  workflow           BookingWorkflow @default(INSTANT)
+  paymentPolicy      PaymentPolicy   @default(FULL_UPFRONT)
+  /// Percentage (0-100) required upfront when paymentPolicy is DEPOSIT_ALLOWED.
+  depositPercent     Int             @default(50)
+  /// Operational buffer applied before a booking for turnaround/preparation.
+  bufferBeforeMinutes Int            @default(0)
+  /// Operational buffer applied after a booking for cleaning/turnaround.
+  bufferAfterMinutes Int             @default(0)
+  minBookingMinutes  Int             @default(60)
+  maxBookingMinutes  Int?
+  /// Bookings must start at a multiple of this many minutes past the hour.
+  slotIncrementMinutes Int           @default(30)
+  /// Duration at or above which the DAILY rate is applied instead of HOURLY.
+  dailyRateThresholdMinutes Int      @default(480)
+  /// How far ahead of the start time a booking may still be made.
+  minNoticeHours     Int             @default(24)
+  /// How far into the future bookings may be made.
+  maxAdvanceDays     Int             @default(365)
+
+  /// Outlook calendar this venue's confirmed bookings are written to.
+  outlookCalendarId  String?
+  /// Resource/room mailbox UPN, e.g. opera-theatre@playhousecompany.com
+  outlookMailbox     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images         VenueImage[]
+  rates          VenueRate[]
+  operatingHours OperatingHours[]
+  closures       VenueClosure[]
+  reservations   Reservation[]
+  managers       VenueManager[]
+
+  @@index([isActive, sortOrder])
+  @@map("venues")
+}
+
+model VenueImage {
+  id        String  @id @default(cuid())
+  venueId   String
+  url       String
+  alt       String
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId, sortOrder])
+  @@map("venue_images")
+}
+
+model VenueRate {
+  id       String   @id @default(cuid())
+  venueId  String
+  kind     RateKind
+  /// Human label shown to customers, e.g. "Standard hourly", "Full-day hire".
+  label    String
+  amount   Decimal  @db.Decimal(12, 2)
+  currency String   @default("ZAR")
+  /// Optional validity window, allowing seasonal/tariff-year rate changes.
+  validFrom DateTime?
+  validTo   DateTime?
+  isActive Boolean  @default(true)
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId, kind, isActive])
+  @@map("venue_rates")
+}
+
+/// Weekly opening hours. dayOfWeek: 0 = Sunday ... 6 = Saturday.
+/// Times are minutes from midnight in the venue's local timezone.
+model OperatingHours {
+  id        String @id @default(cuid())
+  venueId   String
+  dayOfWeek Int
+  opensAt   Int
+  closesAt  Int
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([venueId, dayOfWeek])
+  @@map("operating_hours")
+}
+
+/// Public holidays, maintenance windows, productions blocking a venue.
+model VenueClosure {
+  id       String   @id @default(cuid())
+  venueId  String
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt   DateTime @db.Timestamptz(3)
+  reason   String
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId, startsAt, endsAt])
+  @@map("venue_closures")
+}
+
+// ---------------------------------------------------------------------------
+// Cart, reservations & bookings
+// ---------------------------------------------------------------------------
+
+model Cart {
+  id        String   @id @default(cuid())
+  /// Anonymous browser session identifier, so guests can build a cart.
+  sessionId String   @unique
+  userId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  reservations Reservation[]
+
+  @@map("carts")
+}
+
+/// One venue occupying one time range. See file header for why cart holds and
+/// confirmed bookings share this table.
+model Reservation {
+  id      String @id @default(cuid())
+  venueId String
+
+  /// Customer-facing booking window.
+  startsAt DateTime @db.Timestamptz(3)
+  endsAt   DateTime @db.Timestamptz(3)
+  /// startsAt/endsAt expanded by the venue's operational buffers. This is the
+  /// range the exclusion constraint tests, so buffers genuinely reserve time.
+  blockStartsAt DateTime @db.Timestamptz(3)
+  blockEndsAt   DateTime @db.Timestamptz(3)
+
+  status ReservationStatus @default(HELD)
+
+  /// Pricing snapshot, captured at add-to-cart so later rate changes do not
+  /// silently alter an in-flight or historical booking.
+  rateKind     RateKind
+  rateAmount   Decimal  @db.Decimal(12, 2)
+  rateLabel    String
+  quantity     Decimal  @db.Decimal(10, 2) // hours or days charged
+  lineTotal    Decimal  @db.Decimal(12, 2)
+  currency     String   @default("ZAR")
+
+  cartId        String?
+  bookingId     String?
+  holdExpiresAt DateTime? @db.Timestamptz(3)
+
+  /// Microsoft Graph event id, once synced to the venue's Outlook calendar.
+  outlookEventId String?
+  notes          String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  venue   Venue    @relation(fields: [venueId], references: [id], onDelete: Restrict)
+  cart    Cart?    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  @@index([venueId, blockStartsAt, blockEndsAt])
+  @@index([status, holdExpiresAt])
+  @@index([bookingId])
+  @@map("reservations")
+}
+
+model Booking {
+  id        String        @id @default(cuid())
+  /// Human-quotable reference, e.g. PHC-2026-000431.
+  reference String        @unique
+  userId    String
+  status    BookingStatus @default(PENDING_PAYMENT)
+
+  contactName  String
+  contactEmail String
+  contactPhone String?
+  organisation String?
+  eventTitle   String?
+  purpose      String?  @db.Text
+
+  currency   String  @default("ZAR")
+  subtotal   Decimal @db.Decimal(12, 2)
+  /// Total payable. Kept separate from subtotal so discounts/levies can be
+  /// introduced without rewriting historical rows.
+  total      Decimal @db.Decimal(12, 2)
+
+  /// VAT is included in the published tariff, so `total` is the VAT-inclusive
+  /// amount and `vatAmount` is the portion of it attributable to VAT. Both the
+  /// rate and the computed amount are snapshotted, so a change to the statutory
+  /// rate never alters a historical tax invoice.
+  vatRate    Decimal @db.Decimal(5, 2)  @default(15.00)
+  vatAmount  Decimal @db.Decimal(12, 2) @default(0)
+  /// Amount required before the booking is confirmed (full total, or deposit).
+  amountDue  Decimal @db.Decimal(12, 2)
+  amountPaid Decimal @db.Decimal(12, 2) @default(0)
+
+  paymentPolicy PaymentPolicy   @default(FULL_UPFRONT)
+  workflow      BookingWorkflow @default(INSTANT)
+
+  approvedAt   DateTime?
+  approvedById String?
+  rejectedAt   DateTime?
+  rejectionReason String?
+  cancelledAt  DateTime?
+  cancellationReason String?
+
+  confirmedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  reservations Reservation[]
+  payments     Payment[]
+
+  @@index([status, createdAt])
+  @@index([userId])
+  @@map("bookings")
+}
+
+// ---------------------------------------------------------------------------
+// Payments
+// ---------------------------------------------------------------------------
+
+model Payment {
+  id        String         @id @default(cuid())
+  bookingId String
+  gateway   GatewayId
+  purpose   PaymentPurpose @default(FULL)
+  status    PaymentStatus  @default(INITIATED)
+
+  amount   Decimal @db.Decimal(12, 2)
+  currency String  @default("ZAR")
+
+  /// Our idempotent reference sent to the gateway (m_payment_id / reference).
+  reference       String  @unique
+  /// The gateway's own identifier for the transaction, once known.
+  gatewayReference String?
+  /// Receipt number issued on success.
+  receiptNumber   String? @unique
+
+  failureReason String?
+  paidAt        DateTime?
+  refundedAt    DateTime?
+  refundedAmount Decimal? @db.Decimal(12, 2)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  booking Booking            @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  events  PaymentEvent[]
+
+  @@index([bookingId])
+  @@index([status])
+  @@map("payments")
+}
+
+/// Immutable, append-only record of every gateway interaction. This is the
+/// secure audit trail required for transaction reconciliation and dispute
+/// resolution — raw payloads are retained verbatim.
+model PaymentEvent {
+  id        String   @id @default(cuid())
+  paymentId String
+  /// e.g. "checkout.created", "itn.received", "webhook.verified"
+  type      String
+  /// Whether signature/host verification passed for inbound gateway calls.
+  verified  Boolean  @default(false)
+  payload   Json
+  sourceIp  String?
+  createdAt DateTime @default(now())
+
+  payment Payment @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId, createdAt])
+  @@map("payment_events")
+}
+
+// ---------------------------------------------------------------------------
+// Operations
+// ---------------------------------------------------------------------------
+
+/// General-purpose audit trail for administrative and booking state changes.
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actorLabel String
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+/// Singleton-style key/value configuration editable by ADMIN without a deploy.
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}
+
+/// Outbound email log — proof of despatch for confirmations and receipts.
+model EmailLog {
+  id        String   @id @default(cuid())
+  to        String
+  subject   String
+  template  String
+  bookingId String?
+  success   Boolean
+  error     String?
+  createdAt DateTime @default(now())
+
+  @@index([bookingId])
+  @@map("email_logs")
+}

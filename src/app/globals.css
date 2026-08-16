@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/**
+ * The Playhouse Company — booking platform theme.
+ *
+ * Burgundy and warm parchment, drawn from the Playhouse's own identity, with a
+ * serif display face for headings and a humanist sans for interface text.
+ */
+
+@theme {
+  --color-brand-50: #fdf5f7;
+  --color-brand-100: #f9e6ec;
+  --color-brand-200: #f1c6d3;
+  --color-brand-300: #e29bb0;
+  --color-brand-400: #cc6584;
+  --color-brand-500: #b03f61;
+  --color-brand-600: #8a1538;
+  --color-brand-700: #74122f;
+  --color-brand-800: #5c0d25;
+  --color-brand-900: #45091c;
+
+  --color-parchment-50: #fdfcfa;
+  --color-parchment-100: #f7f4ef;
+  --color-parchment-200: #efe9e0;
+  --color-parchment-300: #ded4c6;
+  --color-parchment-400: #c3b6a3;
+
+  --color-ink-500: #6b6357;
+  --color-ink-700: #3d382f;
+  --color-ink-900: #1f1c18;
+
+  /* Warm gold used for navigation hover and active states, matching the
+     Playhouse Company's own site. */
+  --color-gold-300: #e2c48c;
+  --color-gold-400: #d6a95f;
+  --color-gold-500: #b08d3f;
+  --color-gold-600: #8a6d1f;
+
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-inter), system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:root {
+  --background: var(--color-parchment-100);
+  --foreground: var(--color-ink-900);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+}
+
+/* Focus ring consistent across the whole platform, for keyboard operators. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-600);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Numeric alignment in financial and schedule tables. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
