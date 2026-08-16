@@ -76,16 +76,28 @@ try {
       "<p>This is a test message.</p>" +
       "<p>If you are reading it, booking confirmations and tax invoices will reach customers.</p>",
   });
-  console.log(`  ✓ accepted for delivery (id ${info.messageId})`);
+  console.log(`  ✓ the server accepted the message (id ${info.messageId})`);
   console.log(
-    "\nMail is working. Any confirmations recorded while SMTP was unset will be\n" +
-      "delivered on the next run of /api/maintenance/sweep.\n",
+    "\n  Accepted is not the same as delivered. The provider can still reject a\n" +
+      "  message after taking it, and the commonest reason is an unverified\n" +
+      "  sender address. Confirm it arrived before trusting this.\n",
   );
+  if (host.includes("brevo")) {
+    console.log(
+      "  Brevo: check Transactional -> Logs. A message that shows as rejected\n" +
+        `  there usually means ${senderAddress()} is not a verified sender.\n` +
+        "  Add it under Senders, Domains & Dedicated IPs -> Senders.\n",
+    );
+  }
 } catch (error) {
   const message = error instanceof Error ? error.message : String(error);
   console.error(`  ✗ ${message}\n`);
   console.error(hint(message));
   process.exit(1);
+}
+
+function senderAddress(): string {
+  return from.replace(/.*<|>.*/g, "").trim();
 }
 
 /**
@@ -97,7 +109,7 @@ try {
 function hint(message: string): string {
   const m = message.toLowerCase();
   const brevo = host.includes("brevo");
-  const senderAddress = from.replace(/.*<|>.*/g, "").trim();
+  const sender = senderAddress();
 
   // Nothing to authenticate with, whatever the server said.
   if (!user || !pass) {
@@ -114,7 +126,7 @@ function hint(message: string): string {
   if (m.includes("not verified") || m.includes("sender you used") || m.includes("unrecognized sender")) {
     return (
       "  The provider does not recognise the sender address.\n" +
-      `  Verify ${senderAddress} with the provider first` +
+      `  Verify ${sender} with the provider first` +
       (brevo ? " (Brevo -> Senders, Domains & Dedicated IPs -> Senders)." : ".") +
       "\n  Until a domain is verified, use an address you control as MAIL_FROM."
     );
@@ -148,7 +160,7 @@ function hint(message: string): string {
     return (
       "  The server wants authentication it did not receive or accept.\n" +
       "  Check SMTP_USER and SMTP_PASSWORD, and that the account is permitted to\n" +
-      `  send as ${senderAddress}.`
+      `  send as ${sender}.`
     );
   }
 

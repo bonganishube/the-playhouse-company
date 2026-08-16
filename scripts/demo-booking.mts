@@ -25,12 +25,25 @@ const user = await prisma.user.upsert({
 });
 
 const cart = await prisma.cart.create({ data: { sessionId: `demo-${Date.now()}` } });
-const d = new Date(Date.now() + 18 * 86_400_000);
-while (d.getUTCDay() === 0) d.setUTCDate(d.getUTCDate() + 1);
-const day = d.toISOString().slice(0, 10);
 
-const held = await addToCart(cart.id, venue.id, localToUtc(day, 600, venue.timezone), localToUtc(day, 780, venue.timezone));
-if (!held.ok) { console.error("could not hold the slot:", held.message); process.exit(1); }
+// Walk forward until a free slot is found. Earlier demo bookings occupy their
+// own slots, and the double-booking guard correctly refuses to reuse them.
+// `break` ends the search, so the loop condition stays a plain bound and the
+// compiler can still narrow `found` afterwards.
+let found = false;
+for (let offset = 18; offset < 60; offset++) {
+  const d = new Date(Date.now() + offset * 86_400_000);
+  if (d.getUTCDay() === 0) continue;               // rehearsal venues close Sundays
+  const day = d.toISOString().slice(0, 10);
+  const attempt = await addToCart(
+    cart.id,
+    venue.id,
+    localToUtc(day, 600, venue.timezone),
+    localToUtc(day, 780, venue.timezone),
+  );
+  if (attempt.ok) { found = true; break; }
+}
+if (!found) { console.error("no free slot found in the next 60 days"); process.exit(1); }
 
 const created = await createBookingFromCart(cart.id, user.id, {
   contactName: "Demo Customer",
