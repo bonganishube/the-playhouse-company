@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { PageHero } from "@/components/PageHero";
 import { rebuildCheckout } from "@/lib/booking";
 import { prisma } from "@/lib/prisma";
 
@@ -29,18 +30,23 @@ export default async function CheckoutRedirectPage({
   if (checkout.kind === "redirect") {
     // Nothing to sign — send the customer straight on.
     return (
-      <div className="mx-auto max-w-lg px-4 py-20 text-center">
+      <>
+        <PageHero title="Redirecting to payment" />
+        <div className="mx-auto max-w-lg px-4 py-20 text-center">
         <p className="text-ink-700">Redirecting you to the payment page…</p>
         <a href={checkout.url} className="mt-4 inline-block text-brand-600 underline">
           Continue to payment
         </a>
         <meta httpEquiv="refresh" content={`0;url=${checkout.url}`} />
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 py-20 text-center">
+    <>
+      <PageHero title="Redirecting to payment" />
+      <div className="mx-auto max-w-lg px-4 py-20 text-center">
       <h1 className="text-2xl">Redirecting you to payment</h1>
       <p className="mt-2 text-sm text-ink-500">
         You are being taken to our payment provider to complete your booking
@@ -69,6 +75,7 @@ export default async function CheckoutRedirectPage({
           __html: `document.getElementById("gateway-form").submit();`,
         }}
       />
-    </div>
+      </div>
+    </>
   );
 }

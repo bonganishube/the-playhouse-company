@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { PageHero } from "@/components/PageHero";
 import { PaymentReconciler } from "@/components/PaymentReconciler";
 import { Alert, ButtonLink, Card, DetailRow, StatusBadge } from "@/components/ui";
 import { getSession, isStaffRole } from "@/lib/auth";
@@ -46,7 +47,10 @@ export default async function BookingPage({
   const dueNowCents = toCents(booking.amountDue) - paidCents;
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
+    <>
+      <PageHero eyebrow="Booking reference" title={booking.reference} />
+
+      <div className="mx-auto max-w-3xl px-4 py-10">
       {query.payment === "return" && booking.status === "PENDING_PAYMENT" && (
         <div className="mb-6">
           <Alert tone="info" title="Confirming your payment">
@@ -94,13 +98,10 @@ export default async function BookingPage({
         </div>
       )}
 
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-xs uppercase tracking-[0.2em] text-ink-500">
-            Booking reference
-          </p>
-          <h1 className="font-mono text-2xl">{booking.reference}</h1>
-        </div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-ink-500">
+          Booked on {formatDateTime(booking.createdAt)}
+        </p>
         <StatusBadge status={booking.status} />
       </div>
 
@@ -231,6 +232,7 @@ export default async function BookingPage({
         To amend or cancel this booking, contact bookings@playhousecompany.com quoting
         your reference.
       </p>
-    </div>
+      </div>
+    </>
   );
 }
