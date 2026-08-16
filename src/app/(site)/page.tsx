@@ -28,7 +28,6 @@ export default async function HomePage() {
       <PageHero
         size="tall"
         images={VENUE_PHOTOGRAPHY}
-        eyebrow="Durban · Since 1935"
         title="Hire a stage worthy of the occasion."
         lead="From the Opera Theatre to a rehearsal room, The Playhouse Company's venues are available for performance, conference, function and rehearsal hire. Check availability, reserve your dates and pay securely online."
       >

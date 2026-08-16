@@ -27,10 +27,10 @@ async function cartCount(): Promise<number> {
  * Site header.
  *
  * Follows the pattern of The Playhouse Company's own website: a deep indigo
- * band carries the navigation, with the logo occupying a white card that hangs
- * from the top edge. The band is translucent and laid over the page hero (see
- * .header-gradient in globals.css), so the photograph reads faintly through it
- * while the tint keeps white nav type legible over any frame.
+ * navigation sits over the page hero behind a translucent purple wash, with
+ * the logo occupying a white card hanging from the top edge. The wash is light
+ * enough for the photograph to read through it, and dense enough to hold white
+ * type legible over the brightest frame in the slideshow.
  *
  * Session and cart lookups stay here on the server; <SiteNav> is the client
  * shell that needs state for the small-screen drawer.
@@ -43,7 +43,7 @@ export async function SiteHeader() {
       <div className="mx-auto flex max-w-6xl items-start justify-between gap-6 px-4">
         {/* The logo is used exactly as supplied, it carries its own white
             panel and rounded lower corners, so no wrapper background, border
-            or shadow is added. It hangs from the very top of the viewport. */}
+            or shadow is added. It hangs from the very top of the band. */}
         <Link
           href="/"
           className="shrink-0"

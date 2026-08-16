@@ -5,8 +5,9 @@ import { HeroSlideshow } from "./HeroSlideshow";
 /**
  * Full-bleed hero banner sitting beneath the overlaid site header.
  *
- * The translucent header band is laid over the top of this section, so the
- * padding below reserves room for it.
+ * The header is laid over the top of this section with no background of its
+ * own, so the scrim below carries the whole burden of nav legibility and the
+ * padding reserves room for it.
  *
  * Following The Playhouse Company's own site, the page title sits in a dark
  * translucent band rather than directly on the photograph. That is not only a
@@ -80,7 +81,7 @@ export function PageHero({
           against bright photography. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-black/55 via-black/15 to-black/45"
+        className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/65 via-black/15 via-35% to-black/50"
       />
 
       <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-32 sm:pb-14 sm:pt-36">
