@@ -28,13 +28,15 @@ const { checkSlot } = await import("../src/lib/availability");
 const {
   approveBooking,
   createBookingFromCart,
+  declineCancellationRequest,
   initiatePayment,
+  requestCancellation,
   settlePayment,
 } = await import("../src/lib/booking");
 const { localToUtc, formatRange } = await import("../src/lib/time");
 const { toCents, formatCents, vatPortionOfInclusive } = await import("../src/lib/money");
 const reports = await import("../src/lib/reports");
-const { GatewayId } = await import("../src/generated/prisma/enums");
+const { GatewayId, PaymentPurpose } = await import("../src/generated/prisma/enums");
 
 const TEST_EMAIL = "verify@test.local";
 
@@ -363,7 +365,111 @@ async function main() {
   );
 
   // -----------------------------------------------------------------------
-  section("4. Reports");
+  section("4. Paying an outstanding balance");
+
+  const beforeBalance = await prisma.booking.findUniqueOrThrow({
+    where: { id: operaBooking.bookingId },
+  });
+  const owed = toCents(beforeBalance.total) - toCents(beforeBalance.amountPaid);
+  check(
+    `confirmed deposit booking still owes ${formatCents(owed)}`,
+    owed > 0 && beforeBalance.status === "CONFIRMED",
+  );
+
+  const { payment: balancePayment } = await initiatePayment(
+    operaBooking.bookingId,
+    PaymentPurpose.BALANCE,
+  );
+  check(
+    "balance payment is for the full remainder, not the upfront amount",
+    toCents(balancePayment.amount) === owed,
+    `${formatCents(toCents(balancePayment.amount))} vs ${formatCents(owed)}`,
+  );
+
+  await settlePayment(
+    GatewayId.MOCK,
+    successCallback(balancePayment.reference, toCents(balancePayment.amount)),
+  );
+  const afterBalance = await prisma.booking.findUniqueOrThrow({
+    where: { id: operaBooking.bookingId },
+  });
+  check(
+    "booking paid in full",
+    toCents(afterBalance.amountPaid) === toCents(afterBalance.total),
+    formatCents(toCents(afterBalance.amountPaid)),
+  );
+  check("still CONFIRMED after settling the balance", afterBalance.status === "CONFIRMED");
+  check(
+    "amount due raised to the total, so reporting reconciles",
+    toCents(afterBalance.amountDue) === toCents(afterBalance.total),
+  );
+
+  // -----------------------------------------------------------------------
+  section("5. Customer cancellation");
+
+  // An unpaid booking ends immediately: no money, nothing to refund.
+  const unpaidCart = await newCart("unpaid");
+  // 17:00 clears the turnaround buffer of the earlier bookings in section 1.
+  const heldUnpaid = await addToCart(unpaidCart.id, room.id, at(17 * 60), at(19 * 60));
+  if (!heldUnpaid.ok) throw new Error(`could not hold a slot: ${heldUnpaid.message}`);
+  const unpaid = await createBookingFromCart(unpaidCart.id, customer.id, {
+    contactName: "Verification Customer",
+    contactEmail: TEST_EMAIL,
+    contactPhone: "031 369 9540",
+  });
+  if (!unpaid.ok) throw new Error(`could not create the unpaid booking: ${unpaid.message}`);
+
+  const unpaidResult = await requestCancellation(
+    unpaid.bookingId,
+    { id: customer.id, email: TEST_EMAIL, fullName: "Verification Customer" },
+    "Plans changed.",
+  );
+  check(
+    "unpaid booking cancelled immediately",
+    unpaidResult.ok && unpaidResult.outcome === "CANCELLED",
+  );
+  const unpaidAfter = await prisma.booking.findUniqueOrThrow({
+    where: { id: unpaid.bookingId },
+    include: { reservations: true },
+  });
+  check("its slot released", unpaidAfter.reservations.every((r) => r.status === "CANCELLED"));
+
+  // A paid booking is not cancelled on the customer's word alone.
+  const paidResult = await requestCancellation(
+    operaBooking.bookingId,
+    { id: customer.id, email: TEST_EMAIL, fullName: "Verification Customer" },
+    "Event postponed.",
+  );
+  check(
+    "paid booking raises a request rather than cancelling",
+    paidResult.ok && paidResult.outcome === "REQUESTED",
+  );
+  const requested = await prisma.booking.findUniqueOrThrow({
+    where: { id: operaBooking.bookingId },
+    include: { reservations: true },
+  });
+  check("booking still stands while under review", requested.status === "CONFIRMED");
+  check("venue still held", requested.reservations.every((r) => r.status === "CONFIRMED"));
+  check("request recorded with its reason", requested.cancellationRequestReason === "Event postponed.");
+
+  const dup = await requestCancellation(
+    operaBooking.bookingId,
+    { id: customer.id, email: TEST_EMAIL, fullName: "Verification Customer" },
+    "Again.",
+  );
+  check("a second request is refused", !dup.ok);
+
+  await declineCancellationRequest(operaBooking.bookingId, {
+    id: admin.id, email: admin.email, fullName: admin.fullName,
+  }, "Within 14 days of the event.");
+  const declined = await prisma.booking.findUniqueOrThrow({
+    where: { id: operaBooking.bookingId },
+  });
+  check("declining clears the request and keeps the booking", 
+    declined.cancellationRequestedAt === null && declined.status === "CONFIRMED");
+
+  // -----------------------------------------------------------------------
+  section("6. Reports");
 
   const range = {
     from: new Date(Date.now() - 86_400_000),
@@ -380,7 +486,8 @@ async function main() {
   );
 
   const history = await reports.customerHistory(range, { email: TEST_EMAIL });
-  check(`customer history (${history.rows.length} bookings)`, history.rows.length === 2);
+  // Hourly booking, deposit booking, and the one cancelled while unpaid.
+  check(`customer history (${history.rows.length} bookings)`, history.rows.length === 3);
 
   const cancelled = await reports.cancelledBookings(range);
   check("cancelled bookings runs", Array.isArray(cancelled.rows));

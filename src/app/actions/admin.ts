@@ -14,6 +14,7 @@ import { recordAudit } from "@/lib/audit";
 import {
   approveBooking,
   cancelBooking,
+  declineCancellationRequest,
   recordManualPayment,
   rejectBooking,
   requestBalanceSettlement,
@@ -102,6 +103,33 @@ export async function cancelBookingAction(
     revalidatePath("/admin/bookings");
     revalidatePath(`/admin/bookings/${bookingId}`);
     return { ok: true, message: "Booking cancelled and slots released." };
+  } catch (error) {
+    return { ok: false, message: errorMessage(error) };
+  }
+}
+
+/**
+ * Decline a customer's cancellation request, leaving the booking standing.
+ *
+ * Approving one is not a separate action: staff use the ordinary cancellation
+ * below, which releases the venue and records the reason, so a cancellation is
+ * handled identically however it was prompted.
+ */
+export async function declineCancellationAction(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  try {
+    const user = await requireCapability("bookings.cancel");
+    const bookingId = String(formData.get("bookingId") ?? "");
+    const reason = String(formData.get("reason") ?? "").trim();
+    if (reason.length < 3) {
+      return { ok: false, message: "Please record a reason for the decision." };
+    }
+    await assertVenueScope(user, bookingId);
+    await declineCancellationRequest(bookingId, user, reason);
+    revalidatePath(`/admin/bookings/${bookingId}`);
+    return { ok: true, message: "Request declined and the customer notified." };
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import {
   ApprovalPanel,
   CancelPanel,
+  CancellationRequestPanel,
   PaymentPanel,
 } from "@/components/admin/BookingActions";
 import { NotificationsPanel } from "@/components/admin/NotificationsPanel";
@@ -289,6 +290,16 @@ export default async function AdminBookingDetail({
               </DetailRow>
             </dl>
           </Card>
+
+          {booking.cancellationRequestedAt &&
+            can(user.role, "bookings.cancel") && (
+              <CancellationRequestPanel
+                bookingId={booking.id}
+                requestedAt={formatDateTime(booking.cancellationRequestedAt)}
+                reason={booking.cancellationRequestReason ?? "No reason given."}
+                refundableLabel={formatCents(paidCents, booking.currency)}
+              />
+            )}
 
           {booking.status === "PENDING_APPROVAL" &&
             can(user.role, "bookings.approve") && (

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CancelBooking, PayBalance } from "@/components/BookingActions";
 import { PageHero } from "@/components/PageHero";
 import { PaymentReconciler } from "@/components/PaymentReconciler";
 import { Alert, ButtonLink, Card, DetailRow, StatusBadge } from "@/components/ui";
@@ -45,6 +46,7 @@ export default async function BookingPage({
   const paidCents = toCents(booking.amountPaid);
   const outstandingCents = totalCents - paidCents;
   const dueNowCents = toCents(booking.amountDue) - paidCents;
+  const isLive = !["CANCELLED", "REJECTED", "COMPLETED"].includes(booking.status);
 
   return (
     <>
@@ -167,6 +169,13 @@ export default async function BookingPage({
               </ButtonLink>
             </div>
           )}
+
+          {outstandingCents > 0 && booking.status !== "PENDING_PAYMENT" && isLive && (
+            <PayBalance
+              reference={booking.reference}
+              outstandingLabel={formatCents(outstandingCents, booking.currency)}
+            />
+          )}
         </Card>
 
         <Card className="p-5">
@@ -228,9 +237,27 @@ export default async function BookingPage({
         </Card>
       )}
 
+      {booking.cancellationRequestedAt ? (
+        <div className="mt-6">
+          <Alert tone="warning" title="Cancellation requested">
+            We received your request on{" "}
+            {formatDateTime(booking.cancellationRequestedAt)} and it is with our
+            venue management team. Your booking stands until a decision is made,
+            and we will write to you either way.
+          </Alert>
+        </div>
+      ) : (
+        isLive && (
+          <CancelBooking
+            reference={booking.reference}
+            hasPaid={paidCents > 0}
+          />
+        )
+      )}
+
       <p className="mt-6 text-sm text-ink-500">
-        To amend or cancel this booking, contact bookings@playhousecompany.com quoting
-        your reference.
+        To amend this booking, contact bookings@playhousecompany.com quoting your
+        reference.
       </p>
       </div>
     </>

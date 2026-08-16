@@ -299,6 +299,121 @@ export function bookingRejected(data: {
   return { subject: `Booking not approved: ${data.reference}`, html, text };
 }
 
+/** Sent to staff when a customer asks to cancel a booking they have paid for. */
+export function cancellationRequestInternal(data: {
+  reference: string;
+  contactName: string;
+  contactEmail: string;
+  reason: string;
+  paidLabel: string;
+  venues: string;
+  bookedFor: string;
+  adminUrl: string;
+}) {
+  const html = layout(
+    `Cancellation requested: ${data.reference}`,
+    `<p>A customer has asked to cancel a booking that has already been paid for.
+        It has <strong>not</strong> been cancelled: the venue is still held and no
+        refund has been made.</p>
+     ${referenceBadge(data.reference)}
+     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:16px 0;font-size:14px;">
+       <tr><td style="padding:6px 0;color:${MUTED};">Customer</td><td style="padding:6px 0;text-align:right;">${escape(data.contactName)}</td></tr>
+       <tr><td style="padding:6px 0;color:${MUTED};">Email</td><td style="padding:6px 0;text-align:right;">${escape(data.contactEmail)}</td></tr>
+       <tr><td style="padding:6px 0;color:${MUTED};">Venue</td><td style="padding:6px 0;text-align:right;">${escape(data.venues)}</td></tr>
+       <tr><td style="padding:6px 0;color:${MUTED};">Booked for</td><td style="padding:6px 0;text-align:right;">${escape(data.bookedFor)}</td></tr>
+       <tr><td style="padding:6px 0;border-top:1px solid ${LINE};">Paid to date</td><td style="padding:6px 0;border-top:1px solid ${LINE};text-align:right;"><strong>${escape(data.paidLabel)}</strong></td></tr>
+     </table>
+     <p><strong>Reason given:</strong> ${escape(data.reason)}</p>
+     <p style="color:${MUTED};font-size:13px;">Approving the cancellation releases the
+        venue and marks the amount above as refundable. The refund itself is processed
+        separately through the merchant account.</p>
+     ${button(data.adminUrl, "Review in admin console")}`,
+  );
+  const text = [
+    `A customer has asked to cancel a paid booking. It has NOT been cancelled.`,
+    ``,
+    `Reference: ${data.reference}`,
+    `Customer: ${data.contactName} (${data.contactEmail})`,
+    `Venue: ${data.venues}`,
+    `Booked for: ${data.bookedFor}`,
+    `Paid to date: ${data.paidLabel}`,
+    ``,
+    `Reason: ${data.reason}`,
+    ``,
+    data.adminUrl,
+  ].join("\n");
+  return { subject: `Cancellation requested: ${data.reference}`, html, text };
+}
+
+/** Sent to the customer acknowledging a cancellation request. */
+export function cancellationAcknowledged(data: {
+  reference: string;
+  contactName: string;
+  bookingUrl: string;
+}) {
+  const html = layout(
+    `Cancellation request received: ${data.reference}`,
+    `<p>Dear ${escape(data.contactName)},</p>
+     <p>We have received your request to cancel this booking. It is now with our
+        venue management team.</p>
+     ${referenceBadge(data.reference)}
+     <p><strong>Your booking has not been cancelled yet.</strong> Because payment has
+        been made, cancellations are reviewed against our conditions of hire before
+        anything is released or refunded. We will write to you once a decision has
+        been made.</p>
+     ${button(data.bookingUrl, "View your booking")}`,
+  );
+  const text = [
+    `Dear ${data.contactName},`,
+    ``,
+    `We have received your request to cancel booking ${data.reference}.`,
+    `It has NOT been cancelled yet. Because payment has been made, the request`,
+    `is reviewed against our conditions of hire before anything is released or`,
+    `refunded. We will write to you once a decision has been made.`,
+    ``,
+    data.bookingUrl,
+  ].join("\n");
+  return {
+    subject: `Cancellation request received: ${data.reference}`,
+    html,
+    text,
+  };
+}
+
+/** Sent to the customer when staff decline a cancellation request. */
+export function cancellationDeclined(data: {
+  reference: string;
+  contactName: string;
+  reason: string;
+  bookingUrl: string;
+}) {
+  const html = layout(
+    `Cancellation not approved: ${data.reference}`,
+    `<p>Dear ${escape(data.contactName)},</p>
+     <p>We have reviewed your request to cancel this booking and are unable to
+        approve it. Your booking therefore stands as arranged.</p>
+     ${referenceBadge(data.reference)}
+     <p><strong>Reason:</strong> ${escape(data.reason)}</p>
+     <p>If your circumstances have changed, please contact us at
+        bookings@playhousecompany.com and we will do what we can to help,
+        including looking at alternative dates.</p>
+     ${button(data.bookingUrl, "View your booking")}`,
+  );
+  const text = [
+    `Dear ${data.contactName},`,
+    ``,
+    `We are unable to approve your request to cancel booking ${data.reference}.`,
+    `Your booking stands as arranged.`,
+    ``,
+    `Reason: ${data.reason}`,
+    ``,
+    `Please contact bookings@playhousecompany.com if your circumstances have changed.`,
+    ``,
+    data.bookingUrl,
+  ].join("\n");
+  return { subject: `Cancellation not approved: ${data.reference}`, html, text };
+}
+
 export function bookingCancelled(data: {
   reference: string;
   contactName: string;

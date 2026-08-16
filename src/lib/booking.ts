@@ -31,6 +31,8 @@ import {
   sendBookingConfirmedEmail,
   sendBookingCancelledEmail,
   sendBookingRejectedEmail,
+  sendCancellationDeclinedEmail,
+  sendCancellationRequestEmail,
   sendPaymentReceiptEmail,
 } from "./email/send";
 
@@ -206,10 +208,28 @@ export async function initiatePayment(
     include: { reservations: { include: { venue: true } } },
   });
 
-  const outstandingCents =
-    toCents(booking.amountDue) - toCents(booking.amountPaid);
+  // A BALANCE payment settles everything still owed on the booking, not merely
+  // the amount that was required upfront. Without this a deposit booking would
+  // confirm and then offer the customer no way to pay the remainder, because
+  // the upfront requirement had already been met.
+  const paidCents = toCents(booking.amountPaid);
+  const targetCents =
+    purpose === PaymentPurpose.BALANCE
+      ? toCents(booking.total)
+      : toCents(booking.amountDue);
+  const outstandingCents = targetCents - paidCents;
+
   if (outstandingCents <= 0) {
     throw new Error("This booking has no outstanding amount.");
+  }
+
+  // Raise the recorded requirement to match what is being collected, so the
+  // financial position stays consistent across the booking and the reports.
+  if (purpose === PaymentPurpose.BALANCE && targetCents > toCents(booking.amountDue)) {
+    await prisma.booking.update({
+      where: { id: bookingId },
+      data: { amountDue: fromCents(targetCents) },
+    });
   }
 
   const gateway = getGateway(gatewayId);
@@ -459,13 +479,23 @@ async function applySuccessfulPayment(
     const dueCents = toCents(booking.amountDue);
     const settled = paidCents >= dueCents;
 
+    // A booking that has already been decided keeps its status. Without this,
+    // settling a balance on an approved booking would re-apply the approval
+    // rule and send a confirmed booking back to awaiting approval, undoing a
+    // decision staff had already taken.
+    const alreadyDecided =
+      booking.status === BookingStatus.CONFIRMED ||
+      booking.status === BookingStatus.COMPLETED;
+
     // Instant venues confirm on payment; venues under an approval workflow
     // wait for an administrator even once payment has cleared.
-    const nextStatus: BookingStatus = !settled
-      ? BookingStatus.PENDING_PAYMENT
-      : booking.workflow === BookingWorkflow.APPROVAL_REQUIRED
-        ? BookingStatus.PENDING_APPROVAL
-        : BookingStatus.CONFIRMED;
+    const nextStatus: BookingStatus = alreadyDecided
+      ? booking.status
+      : !settled
+        ? BookingStatus.PENDING_PAYMENT
+        : booking.workflow === BookingWorkflow.APPROVAL_REQUIRED
+          ? BookingStatus.PENDING_APPROVAL
+          : BookingStatus.CONFIRMED;
 
     await tx.booking.update({
       where: { id: booking.id },
@@ -473,7 +503,9 @@ async function applySuccessfulPayment(
         amountPaid: fromCents(paidCents),
         status: nextStatus,
         confirmedAt:
-          nextStatus === BookingStatus.CONFIRMED ? new Date() : undefined,
+          nextStatus === BookingStatus.CONFIRMED && !booking.confirmedAt
+            ? new Date()
+            : undefined,
       },
     });
 
@@ -710,6 +742,8 @@ export async function cancelBooking(
         status: BookingStatus.CANCELLED,
         cancelledAt: new Date(),
         cancellationReason: reason,
+        cancellationRequestedAt: null,
+        cancellationRequestReason: null,
       },
     });
     await tx.reservation.updateMany({
@@ -728,6 +762,103 @@ export async function cancelBooking(
   });
 
   await safely("cancellation email", () => sendBookingCancelledEmail(bookingId));
+  return booking;
+}
+
+export type CancellationOutcome =
+  | { ok: true; outcome: "CANCELLED" | "REQUESTED" }
+  | { ok: false; message: string };
+
+/**
+ * A customer asking to cancel.
+ *
+ * An unpaid booking is cancelled outright: no money has changed hands, so
+ * there is nothing to refund and no reason to make anyone wait. Once a payment
+ * has been taken the request goes to staff instead, because releasing the
+ * venue and deciding what is refundable is governed by the conditions of hire,
+ * not by the customer pressing a button.
+ */
+export async function requestCancellation(
+  bookingId: string,
+  actor: { id: string; email: string; fullName: string },
+  reason: string,
+): Promise<CancellationOutcome> {
+  const booking = await prisma.booking.findUniqueOrThrow({
+    where: { id: bookingId },
+  });
+
+  if (booking.userId !== actor.id) {
+    return { ok: false, message: "This booking belongs to someone else." };
+  }
+  if (
+    booking.status === BookingStatus.CANCELLED ||
+    booking.status === BookingStatus.REJECTED
+  ) {
+    return { ok: false, message: "This booking is already cancelled." };
+  }
+  if (booking.cancellationRequestedAt) {
+    return {
+      ok: false,
+      message: "A cancellation request is already with our team.",
+    };
+  }
+
+  const paidCents = toCents(booking.amountPaid);
+
+  if (paidCents === 0) {
+    await cancelBooking(
+      bookingId,
+      actor,
+      `Cancelled by the customer. ${reason}`.trim(),
+    );
+    return { ok: true, outcome: "CANCELLED" };
+  }
+
+  await prisma.booking.update({
+    where: { id: bookingId },
+    data: {
+      cancellationRequestedAt: new Date(),
+      cancellationRequestReason: reason,
+    },
+  });
+
+  await recordAudit({
+    actor: { id: actor.id, label: `${actor.fullName} <${actor.email}>` },
+    action: "booking.cancellation_requested",
+    entityType: "Booking",
+    entityId: bookingId,
+    metadata: { reference: booking.reference, reason, paidCents },
+  });
+
+  await safely("cancellation request notice", () =>
+    sendCancellationRequestEmail(bookingId),
+  );
+
+  return { ok: true, outcome: "REQUESTED" };
+}
+
+/** Staff declining a cancellation request, leaving the booking in place. */
+export async function declineCancellationRequest(
+  bookingId: string,
+  actor: { id: string; email: string; fullName: string },
+  reason: string,
+) {
+  const booking = await prisma.booking.update({
+    where: { id: bookingId },
+    data: { cancellationRequestedAt: null, cancellationRequestReason: null },
+  });
+
+  await recordAudit({
+    actor: { id: actor.id, label: `${actor.fullName} <${actor.email}>` },
+    action: "booking.cancellation_declined",
+    entityType: "Booking",
+    entityId: bookingId,
+    metadata: { reference: booking.reference, reason },
+  });
+
+  await safely("cancellation declined notice", () =>
+    sendCancellationDeclinedEmail(bookingId, reason),
+  );
   return booking;
 }
 

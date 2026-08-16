@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import {
   approveBookingAction,
   cancelBookingAction,
+  declineCancellationAction,
   recordPaymentAction,
   rejectBookingAction,
   requestBalanceAction,
@@ -155,6 +156,101 @@ export function PaymentPanel({
         <div className="mt-3">
           <Alert tone={balanceState.ok ? "success" : "error"}>
             {balanceState.message}
+          </Alert>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/**
+ * A customer has asked to cancel a booking they have paid for.
+ *
+ * Nothing has happened yet: the venue is still held and no refund has been
+ * made. Approving reuses the ordinary cancellation, so the outcome is
+ * identical however a cancellation was prompted.
+ */
+export function CancellationRequestPanel({
+  bookingId,
+  requestedAt,
+  reason,
+  refundableLabel,
+}: {
+  bookingId: string;
+  requestedAt: string;
+  reason: string;
+  refundableLabel: string;
+}) {
+  const [approveState, approve, approving] = useActionState(
+    cancelBookingAction,
+    initial,
+  );
+  const [declineState, decline, declining] = useActionState(
+    declineCancellationAction,
+    initial,
+  );
+
+  return (
+    <Card className="border-l-4 border-l-amber-500 p-5">
+      <h2 className="text-lg">Cancellation requested</h2>
+      <p className="mt-1 text-sm text-ink-500">
+        Received {requestedAt}. The venue is still held and no refund has been
+        made.
+      </p>
+      <p className="mt-3 rounded-sm bg-parchment-100 p-3 text-sm text-ink-900">
+        {reason}
+      </p>
+      <p className="mt-3 text-sm text-ink-700">
+        Approving releases the dates and marks{" "}
+        <strong>{refundableLabel}</strong> as refundable. The refund itself is
+        processed through the merchant account.
+      </p>
+
+      <form action={approve} className="mt-4 space-y-3">
+        <input type="hidden" name="bookingId" value={bookingId} />
+        <Field label="Cancellation reason for the record" required>
+          <input
+            name="reason"
+            required
+            defaultValue="Cancelled at the customer's request."
+            className={inputClass}
+          />
+        </Field>
+        <Button type="submit" variant="danger" size="sm" disabled={approving}>
+          {approving ? "Cancelling…" : "Approve and cancel the booking"}
+        </Button>
+      </form>
+
+      <details className="mt-4 border-t border-parchment-200 pt-4">
+        <summary className="cursor-pointer text-sm text-ink-700">
+          Decline the request
+        </summary>
+        <form action={decline} className="mt-3 space-y-3">
+          <input type="hidden" name="bookingId" value={bookingId} />
+          <Field
+            label="Reason"
+            required
+            hint="Shared with the customer."
+          >
+            <textarea name="reason" rows={2} required className={inputClass} />
+          </Field>
+          <Button type="submit" variant="secondary" size="sm" disabled={declining}>
+            {declining ? "Declining…" : "Decline and keep the booking"}
+          </Button>
+        </form>
+      </details>
+
+      {approveState.message && (
+        <div className="mt-3">
+          <Alert tone={approveState.ok ? "success" : "error"}>
+            {approveState.message}
+          </Alert>
+        </div>
+      )}
+      {declineState.message && (
+        <div className="mt-3">
+          <Alert tone={declineState.ok ? "success" : "error"}>
+            {declineState.message}
           </Alert>
         </div>
       )}

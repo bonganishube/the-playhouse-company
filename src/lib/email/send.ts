@@ -1,7 +1,8 @@
 import { buildIcs } from "../calendar/ics";
 import { env } from "../env";
-import { toCents, vatPortionOfInclusive } from "../money";
+import { formatCents, toCents, vatPortionOfInclusive } from "../money";
 import { prisma } from "../prisma";
+import { formatRange } from "../time";
 import { sendMail, staffRecipients } from "./mailer";
 import * as templates from "./templates";
 import type { BookingEmailData } from "./templates";
@@ -187,6 +188,91 @@ export async function sendBookingRejectedEmail(bookingId: string) {
     html: message.html,
     text: message.text,
     template: "booking-rejected",
+    bookingId,
+  });
+}
+
+/**
+ * A cancellation request: acknowledged to the customer, and put in front of
+ * the staff who can act on it.
+ */
+export async function sendCancellationRequestEmail(bookingId: string) {
+  const booking = await prisma.booking.findUniqueOrThrow({
+    where: { id: bookingId },
+    include: {
+      reservations: {
+        include: { venue: true },
+        orderBy: { startsAt: "asc" },
+      },
+    },
+  });
+
+  const customer = templates.cancellationAcknowledged({
+    reference: booking.reference,
+    contactName: booking.contactName,
+    bookingUrl: `${env.APP_URL}/booking/${booking.reference}`,
+  });
+  await sendMail({
+    to: booking.contactEmail,
+    subject: customer.subject,
+    html: customer.html,
+    text: customer.text,
+    template: "cancellation-acknowledged",
+    bookingId,
+  });
+
+  const venueIds = [...new Set(booking.reservations.map((r) => r.venueId))];
+  const recipients = await staffRecipients(venueIds);
+  if (recipients.length === 0) return true;
+
+  const first = booking.reservations[0];
+  const internal = templates.cancellationRequestInternal({
+    reference: booking.reference,
+    contactName: booking.contactName,
+    contactEmail: booking.contactEmail,
+    reason: booking.cancellationRequestReason ?? "No reason given.",
+    paidLabel: formatCents(toCents(booking.amountPaid), booking.currency),
+    venues: [...new Set(booking.reservations.map((r) => r.venue.name))].join(", "),
+    bookedFor: first
+      ? formatRange(first.startsAt, first.endsAt, first.venue.timezone)
+      : "—",
+    adminUrl: `${env.APP_URL}/admin/bookings/${booking.id}`,
+  });
+
+  await Promise.all(
+    recipients.map((to) =>
+      sendMail({
+        to,
+        subject: internal.subject,
+        html: internal.html,
+        text: internal.text,
+        template: "cancellation-request-internal",
+        bookingId,
+      }),
+    ),
+  );
+  return true;
+}
+
+export async function sendCancellationDeclinedEmail(
+  bookingId: string,
+  reason: string,
+) {
+  const booking = await prisma.booking.findUniqueOrThrow({
+    where: { id: bookingId },
+  });
+  const message = templates.cancellationDeclined({
+    reference: booking.reference,
+    contactName: booking.contactName,
+    reason,
+    bookingUrl: `${env.APP_URL}/booking/${booking.reference}`,
+  });
+  return sendMail({
+    to: booking.contactEmail,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
+    template: "cancellation-declined",
     bookingId,
   });
 }

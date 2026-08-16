@@ -6,7 +6,7 @@ import { PageHero } from "@/components/PageHero";
 import { getSession } from "@/lib/auth";
 import { findCart, getCartView } from "@/lib/cart";
 import { formatCents, percentOfCents } from "@/lib/money";
-import { activeGateway } from "@/lib/payments";
+import { activeGateway, gatewayCatalogue } from "@/lib/payments";
 import { prisma } from "@/lib/prisma";
 import { formatRange } from "@/lib/time";
 
@@ -31,13 +31,13 @@ export default async function CheckoutPage() {
   const depositPercent = Math.max(...venues.map((v) => v.depositPercent));
   const depositCents = percentOfCents(view.subtotalCents, depositPercent);
 
-  let gatewayName: string | null = null;
   let gatewayError: string | null = null;
   try {
-    gatewayName = activeGateway().displayName;
+    activeGateway();
   } catch (error) {
     gatewayError = error instanceof Error ? error.message : "Payment is unavailable.";
   }
+  const gateways = gatewayCatalogue();
 
   return (
     <>
@@ -66,7 +66,7 @@ export default async function CheckoutPage() {
                 }
               : null
           }
-          gatewayName={gatewayName}
+          gateways={gateways}
           gatewayError={gatewayError}
         />
 

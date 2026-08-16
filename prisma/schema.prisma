@@ -376,6 +376,14 @@ model Booking {
   cancelledAt  DateTime?
   cancellationReason String?
 
+  /// A customer has asked to cancel. Paid bookings are never cancelled on the
+  /// customer's word alone: releasing the venue and creating a refund
+  /// obligation is a decision for staff, and the conditions of hire govern
+  /// what is refundable. Unpaid bookings are cancelled outright instead, since
+  /// no money and no obligation are involved.
+  cancellationRequestedAt DateTime?
+  cancellationRequestReason String?  @db.Text
+
   confirmedAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
