@@ -4,12 +4,16 @@ import { NextResponse, type NextRequest } from "next/server";
  * Security headers, and the framing policy that makes the embedded portal
  * possible.
  *
+ * Named `proxy` rather than `middleware`: Next 16 renamed the convention and
+ * warns on every start while the old name is used. Same behaviour, same
+ * matcher.
+ *
  * Everything except /embed is denied framing outright. The /embed routes are
  * framable, but only by the origins listed in EMBED_ALLOWED_ORIGINS, so The
  * Playhouse Company's own website can host the booking portal while a third
  * party cannot frame it to mount a clickjacking attack against customers.
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const response = NextResponse.next();
   const isEmbed = request.nextUrl.pathname.startsWith("/embed");
 
