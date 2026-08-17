@@ -47,6 +47,7 @@ export type BotMessageMinAggregateOutputType = {
   role: $Enums.BotRole | null
   content: string | null
   toolName: string | null
+  externalId: string | null
   tokensIn: number | null
   tokensOut: number | null
   createdAt: Date | null
@@ -58,6 +59,7 @@ export type BotMessageMaxAggregateOutputType = {
   role: $Enums.BotRole | null
   content: string | null
   toolName: string | null
+  externalId: string | null
   tokensIn: number | null
   tokensOut: number | null
   createdAt: Date | null
@@ -70,6 +72,7 @@ export type BotMessageCountAggregateOutputType = {
   content: number
   toolName: number
   toolPayload: number
+  externalId: number
   tokensIn: number
   tokensOut: number
   createdAt: number
@@ -93,6 +96,7 @@ export type BotMessageMinAggregateInputType = {
   role?: true
   content?: true
   toolName?: true
+  externalId?: true
   tokensIn?: true
   tokensOut?: true
   createdAt?: true
@@ -104,6 +108,7 @@ export type BotMessageMaxAggregateInputType = {
   role?: true
   content?: true
   toolName?: true
+  externalId?: true
   tokensIn?: true
   tokensOut?: true
   createdAt?: true
@@ -116,6 +121,7 @@ export type BotMessageCountAggregateInputType = {
   content?: true
   toolName?: true
   toolPayload?: true
+  externalId?: true
   tokensIn?: true
   tokensOut?: true
   createdAt?: true
@@ -215,6 +221,7 @@ export type BotMessageGroupByOutputType = {
   content: string
   toolName: string | null
   toolPayload: runtime.JsonValue | null
+  externalId: string | null
   tokensIn: number
   tokensOut: number
   createdAt: Date
@@ -250,6 +257,7 @@ export type BotMessageWhereInput = {
   content?: Prisma.StringFilter<"BotMessage"> | string
   toolName?: Prisma.StringNullableFilter<"BotMessage"> | string | null
   toolPayload?: Prisma.JsonNullableFilter<"BotMessage">
+  externalId?: Prisma.StringNullableFilter<"BotMessage"> | string | null
   tokensIn?: Prisma.IntFilter<"BotMessage"> | number
   tokensOut?: Prisma.IntFilter<"BotMessage"> | number
   createdAt?: Prisma.DateTimeFilter<"BotMessage"> | Date | string
@@ -263,6 +271,7 @@ export type BotMessageOrderByWithRelationInput = {
   content?: Prisma.SortOrder
   toolName?: Prisma.SortOrderInput | Prisma.SortOrder
   toolPayload?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   tokensIn?: Prisma.SortOrder
   tokensOut?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -271,6 +280,7 @@ export type BotMessageOrderByWithRelationInput = {
 
 export type BotMessageWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  externalId?: string
   AND?: Prisma.BotMessageWhereInput | Prisma.BotMessageWhereInput[]
   OR?: Prisma.BotMessageWhereInput[]
   NOT?: Prisma.BotMessageWhereInput | Prisma.BotMessageWhereInput[]
@@ -283,7 +293,7 @@ export type BotMessageWhereUniqueInput = Prisma.AtLeast<{
   tokensOut?: Prisma.IntFilter<"BotMessage"> | number
   createdAt?: Prisma.DateTimeFilter<"BotMessage"> | Date | string
   conversation?: Prisma.XOR<Prisma.BotConversationScalarRelationFilter, Prisma.BotConversationWhereInput>
-}, "id">
+}, "id" | "externalId">
 
 export type BotMessageOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -292,6 +302,7 @@ export type BotMessageOrderByWithAggregationInput = {
   content?: Prisma.SortOrder
   toolName?: Prisma.SortOrderInput | Prisma.SortOrder
   toolPayload?: Prisma.SortOrderInput | Prisma.SortOrder
+  externalId?: Prisma.SortOrderInput | Prisma.SortOrder
   tokensIn?: Prisma.SortOrder
   tokensOut?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -312,6 +323,7 @@ export type BotMessageScalarWhereWithAggregatesInput = {
   content?: Prisma.StringWithAggregatesFilter<"BotMessage"> | string
   toolName?: Prisma.StringNullableWithAggregatesFilter<"BotMessage"> | string | null
   toolPayload?: Prisma.JsonNullableWithAggregatesFilter<"BotMessage">
+  externalId?: Prisma.StringNullableWithAggregatesFilter<"BotMessage"> | string | null
   tokensIn?: Prisma.IntWithAggregatesFilter<"BotMessage"> | number
   tokensOut?: Prisma.IntWithAggregatesFilter<"BotMessage"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BotMessage"> | Date | string
@@ -323,6 +335,7 @@ export type BotMessageCreateInput = {
   content: string
   toolName?: string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: string | null
   tokensIn?: number
   tokensOut?: number
   createdAt?: Date | string
@@ -336,6 +349,7 @@ export type BotMessageUncheckedCreateInput = {
   content: string
   toolName?: string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: string | null
   tokensIn?: number
   tokensOut?: number
   createdAt?: Date | string
@@ -347,6 +361,7 @@ export type BotMessageUpdateInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   toolName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokensIn?: Prisma.IntFieldUpdateOperationsInput | number
   tokensOut?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -360,6 +375,7 @@ export type BotMessageUncheckedUpdateInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   toolName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokensIn?: Prisma.IntFieldUpdateOperationsInput | number
   tokensOut?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -372,6 +388,7 @@ export type BotMessageCreateManyInput = {
   content: string
   toolName?: string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: string | null
   tokensIn?: number
   tokensOut?: number
   createdAt?: Date | string
@@ -383,6 +400,7 @@ export type BotMessageUpdateManyMutationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   toolName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokensIn?: Prisma.IntFieldUpdateOperationsInput | number
   tokensOut?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -395,6 +413,7 @@ export type BotMessageUncheckedUpdateManyInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   toolName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokensIn?: Prisma.IntFieldUpdateOperationsInput | number
   tokensOut?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -417,6 +436,7 @@ export type BotMessageCountOrderByAggregateInput = {
   content?: Prisma.SortOrder
   toolName?: Prisma.SortOrder
   toolPayload?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   tokensIn?: Prisma.SortOrder
   tokensOut?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -433,6 +453,7 @@ export type BotMessageMaxOrderByAggregateInput = {
   role?: Prisma.SortOrder
   content?: Prisma.SortOrder
   toolName?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   tokensIn?: Prisma.SortOrder
   tokensOut?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -444,6 +465,7 @@ export type BotMessageMinOrderByAggregateInput = {
   role?: Prisma.SortOrder
   content?: Prisma.SortOrder
   toolName?: Prisma.SortOrder
+  externalId?: Prisma.SortOrder
   tokensIn?: Prisma.SortOrder
   tokensOut?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -506,6 +528,7 @@ export type BotMessageCreateWithoutConversationInput = {
   content: string
   toolName?: string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: string | null
   tokensIn?: number
   tokensOut?: number
   createdAt?: Date | string
@@ -517,6 +540,7 @@ export type BotMessageUncheckedCreateWithoutConversationInput = {
   content: string
   toolName?: string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: string | null
   tokensIn?: number
   tokensOut?: number
   createdAt?: Date | string
@@ -558,6 +582,7 @@ export type BotMessageScalarWhereInput = {
   content?: Prisma.StringFilter<"BotMessage"> | string
   toolName?: Prisma.StringNullableFilter<"BotMessage"> | string | null
   toolPayload?: Prisma.JsonNullableFilter<"BotMessage">
+  externalId?: Prisma.StringNullableFilter<"BotMessage"> | string | null
   tokensIn?: Prisma.IntFilter<"BotMessage"> | number
   tokensOut?: Prisma.IntFilter<"BotMessage"> | number
   createdAt?: Prisma.DateTimeFilter<"BotMessage"> | Date | string
@@ -569,6 +594,7 @@ export type BotMessageCreateManyConversationInput = {
   content: string
   toolName?: string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: string | null
   tokensIn?: number
   tokensOut?: number
   createdAt?: Date | string
@@ -580,6 +606,7 @@ export type BotMessageUpdateWithoutConversationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   toolName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokensIn?: Prisma.IntFieldUpdateOperationsInput | number
   tokensOut?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -591,6 +618,7 @@ export type BotMessageUncheckedUpdateWithoutConversationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   toolName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokensIn?: Prisma.IntFieldUpdateOperationsInput | number
   tokensOut?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -602,6 +630,7 @@ export type BotMessageUncheckedUpdateManyWithoutConversationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   toolName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   toolPayload?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  externalId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   tokensIn?: Prisma.IntFieldUpdateOperationsInput | number
   tokensOut?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -616,6 +645,7 @@ export type BotMessageSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   content?: boolean
   toolName?: boolean
   toolPayload?: boolean
+  externalId?: boolean
   tokensIn?: boolean
   tokensOut?: boolean
   createdAt?: boolean
@@ -629,6 +659,7 @@ export type BotMessageSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   content?: boolean
   toolName?: boolean
   toolPayload?: boolean
+  externalId?: boolean
   tokensIn?: boolean
   tokensOut?: boolean
   createdAt?: boolean
@@ -642,6 +673,7 @@ export type BotMessageSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   content?: boolean
   toolName?: boolean
   toolPayload?: boolean
+  externalId?: boolean
   tokensIn?: boolean
   tokensOut?: boolean
   createdAt?: boolean
@@ -655,12 +687,13 @@ export type BotMessageSelectScalar = {
   content?: boolean
   toolName?: boolean
   toolPayload?: boolean
+  externalId?: boolean
   tokensIn?: boolean
   tokensOut?: boolean
   createdAt?: boolean
 }
 
-export type BotMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "toolName" | "toolPayload" | "tokensIn" | "tokensOut" | "createdAt", ExtArgs["result"]["botMessage"]>
+export type BotMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "toolName" | "toolPayload" | "externalId" | "tokensIn" | "tokensOut" | "createdAt", ExtArgs["result"]["botMessage"]>
 export type BotMessageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   conversation?: boolean | Prisma.BotConversationDefaultArgs<ExtArgs>
 }
@@ -686,6 +719,15 @@ export type $BotMessagePayload<ExtArgs extends runtime.Types.Extensions.Internal
      */
     toolName: string | null
     toolPayload: runtime.JsonValue | null
+    /**
+     * The channel's own id for this message, where it has one.
+     * 
+     * WhatsApp redelivers a webhook until it is acknowledged, and a retry that
+     * arrives while the first is still being answered would otherwise produce a
+     * second reply and a second set of tool calls. Unique, so the duplicate is
+     * rejected by the database rather than by a check that can race.
+     */
+    externalId: string | null
     tokensIn: number
     tokensOut: number
     createdAt: Date
@@ -1119,6 +1161,7 @@ export interface BotMessageFieldRefs {
   readonly content: Prisma.FieldRef<"BotMessage", 'String'>
   readonly toolName: Prisma.FieldRef<"BotMessage", 'String'>
   readonly toolPayload: Prisma.FieldRef<"BotMessage", 'Json'>
+  readonly externalId: Prisma.FieldRef<"BotMessage", 'String'>
   readonly tokensIn: Prisma.FieldRef<"BotMessage", 'Int'>
   readonly tokensOut: Prisma.FieldRef<"BotMessage", 'Int'>
   readonly createdAt: Prisma.FieldRef<"BotMessage", 'DateTime'>

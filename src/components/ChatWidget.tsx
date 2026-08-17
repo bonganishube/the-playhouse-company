@@ -117,7 +117,10 @@ export function ChatWidget() {
         <div
           role="dialog"
           aria-label="Booking assistant"
-          className="fixed bottom-24 right-4 z-50 flex h-[min(34rem,calc(100vh-9rem))] w-[min(24rem,calc(100vw-2rem))] flex-col border border-parchment-300 bg-white shadow-2xl sm:right-6"
+          // Sits above the launcher, which itself clears the back-to-top
+          // square. The height allows for both, so the panel never runs off
+          // the top of a short window.
+          className="fixed bottom-32 right-4 z-50 flex h-[min(34rem,calc(100vh-11rem))] w-[min(24rem,calc(100vw-2rem))] flex-col border border-parchment-300 bg-white shadow-2xl sm:right-6"
         >
           <header className="flex items-center justify-between border-b border-parchment-300 bg-brand-600 px-4 py-3 text-white">
             <div>
@@ -205,7 +208,10 @@ export function ChatWidget() {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-label={open ? "Close the booking assistant" : "Open the booking assistant"}
-        className="fixed bottom-6 right-4 z-50 flex items-center gap-2 rounded-full bg-brand-600 px-5 py-3 text-sm font-medium text-white shadow-lg transition-colors hover:bg-brand-700 sm:right-6"
+        // Lifted clear of the back-to-top square, which is pinned flush to the
+        // corner. Sitting at bottom-6 put the two on top of each other, so one
+        // was unreachable depending on which drew last.
+        className="fixed bottom-16 right-4 z-50 flex items-center gap-2 rounded-full bg-brand-600 px-5 py-3 text-sm font-medium text-white shadow-lg transition-colors hover:bg-brand-700 sm:right-6"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path

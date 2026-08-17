@@ -398,6 +398,7 @@ export const BotMessageScalarFieldEnum = {
   content: 'content',
   toolName: 'toolName',
   toolPayload: 'toolPayload',
+  externalId: 'externalId',
   tokensIn: 'tokensIn',
   tokensOut: 'tokensOut',
   createdAt: 'createdAt'

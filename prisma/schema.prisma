@@ -655,6 +655,14 @@ model BotMessage {
   toolName    String?
   toolPayload Json?
 
+  /// The channel's own id for this message, where it has one.
+  ///
+  /// WhatsApp redelivers a webhook until it is acknowledged, and a retry that
+  /// arrives while the first is still being answered would otherwise produce a
+  /// second reply and a second set of tool calls. Unique, so the duplicate is
+  /// rejected by the database rather than by a check that can race.
+  externalId String? @unique
+
   tokensIn  Int @default(0)
   tokensOut Int @default(0)
 
