@@ -118,8 +118,36 @@ async function main() {
 
   // Well beyond the longest notice requirement (Opera needs 7 days), and
   // advanced past Sunday, when the rehearsal rooms are closed.
+  //
+  // The day is then advanced until both venues are genuinely free. Fixing on a
+  // date and assuming nothing else occupies it made the suite fail on any
+  // database that had been used: a demonstration booking on the chosen day
+  // reported itself as a broken double-booking guarantee, which is exactly the
+  // wrong conclusion. Availability is asked for rather than presumed.
   const dayDate = new Date(Date.now() + 14 * 86_400_000);
-  while (dayDate.getUTCDay() === 0) dayDate.setUTCDate(dayDate.getUTCDate() + 1);
+  let attempts = 0;
+  for (;;) {
+    if (attempts++ > 180) {
+      throw new Error("No day in the next six months is free for both venues.");
+    }
+    if (dayDate.getUTCDay() === 0) {
+      dayDate.setUTCDate(dayDate.getUTCDate() + 1);
+      continue;
+    }
+    const candidate = dayDate.toISOString().slice(0, 10);
+    const roomFree = await checkSlot(
+      room.id,
+      localToUtc(candidate, 10 * 60, room.timezone),
+      localToUtc(candidate, 13 * 60, room.timezone),
+    );
+    const operaFree = await checkSlot(
+      opera.id,
+      localToUtc(candidate, 8 * 60, opera.timezone),
+      localToUtc(candidate, 23 * 60, opera.timezone),
+    );
+    if (roomFree.ok && operaFree.ok) break;
+    dayDate.setUTCDate(dayDate.getUTCDate() + 1);
+  }
   const day = dayDate.toISOString().slice(0, 10);
   const at = (minutes: number) => localToUtc(day, minutes, room.timezone);
 

@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "verify": "MAIL_TRANSPORT=none MAIL_REDIRECT_TO= tsx scripts/verify-flow.mts",
+    "preflight": "tsx scripts/preflight.mts",
     "db:seed": "prisma db seed",
     "db:up": "bash scripts/db-up.sh",
     "db:migrate": "prisma migrate dev",
