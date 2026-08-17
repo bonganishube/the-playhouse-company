@@ -89,18 +89,79 @@ const schema = z.object({
   CRON_SECRET: z.string().default(""),
 });
 
+/**
+ * Placeholders used only while compiling.
+ *
+ * Long enough and shaped correctly to satisfy the schema, and obviously not
+ * real, so if one ever reached a running server it would be recognisable in a
+ * log rather than mistaken for a configured value.
+ */
+const BUILD_PLACEHOLDERS: Record<string, string> = {
+  AUTH_SECRET: "build-time-placeholder-not-a-real-secret-do-not-use-at-runtime",
+  DATABASE_URL: "postgresql://build:build@127.0.0.1:5432/build",
+};
+
+/**
+ * Read and validate the environment.
+ *
+ * Strict at runtime, deliberately tolerant while building. Next evaluates
+ * every route module when it collects page data, and does so on a build
+ * machine where the runtime secrets are absent by design: they belong to the
+ * deployment, not the artefact. Throwing there failed the build over settings
+ * that were perfectly well configured on the platform, and would have pushed
+ * anyone towards the genuinely dangerous fix of committing secrets so the
+ * build could see them.
+ *
+ * Nothing is signed, sent or queried during a build, so a placeholder is safe.
+ * A missing value still fails loudly the moment the server actually starts,
+ * and assertProductionReady() checks the rest.
+ */
 function load() {
   const parsed = schema.safeParse(process.env);
-  if (!parsed.success) {
-    const issues = parsed.error.issues
-      .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
-      .join("\n");
-    throw new Error(`Invalid environment configuration:\n${issues}`);
+  if (parsed.success) return parsed.data;
+
+  const building = process.env.NEXT_PHASE === "phase-production-build";
+  if (building) {
+    const missing = parsed.error.issues.map((i) => String(i.path[0]));
+    const filled = { ...process.env } as Record<string, string | undefined>;
+    for (const key of missing) {
+      if (BUILD_PLACEHOLDERS[key]) filled[key] = BUILD_PLACEHOLDERS[key];
+    }
+
+    const retry = schema.safeParse(filled);
+    if (retry.success) {
+      // Next compiles with several workers, each its own process, and each
+      // would otherwise repeat this. Once per process is enough to notice.
+      const flag = "__phcBuildEnvWarned";
+      const g = globalThis as unknown as Record<string, boolean>;
+      if (!g[flag]) g[flag] = true;
+      else return retry.data;
+
+      console.warn(
+        `[env] building without ${missing.join(", ")}. Placeholders are in use for ` +
+          `compilation only. Set these on the deployment platform, or the server ` +
+          `will refuse to start.`,
+      );
+      return retry.data;
+    }
   }
-  return parsed.data;
+
+  const issues = parsed.error.issues
+    .map((i) => `  - ${i.path.join(".")}: ${i.message}`)
+    .join("\n");
+  throw new Error(
+    `Invalid environment configuration:\n${issues}\n\n` +
+      `Set these in the environment. On Vercel that is Project Settings -> ` +
+      `Environment Variables; see docs/going-live.md for the full list.`,
+  );
 }
 
 export const env = load();
+
+/** True when a build-time placeholder is standing in for a real value. */
+export function usingBuildPlaceholders(): boolean {
+  return Object.values(BUILD_PLACEHOLDERS).includes(env.AUTH_SECRET);
+}
 
 /**
  * Settings that are correct in development and dangerous in production.
@@ -120,7 +181,15 @@ const DEV_AUTH_SECRET_MARKER = "dev-only-secret-change-me";
 export function productionReadinessProblems(): ReadinessProblem[] {
   const problems: ReadinessProblem[] = [];
 
-  if (env.AUTH_SECRET.includes(DEV_AUTH_SECRET_MARKER)) {
+  if (usingBuildPlaceholders()) {
+    problems.push({
+      setting: "AUTH_SECRET",
+      detail:
+        "is the build-time placeholder, which means the variable was never set on " +
+        "the deployment platform. Sessions would be signed with a value published " +
+        "in the source.",
+    });
+  } else if (env.AUTH_SECRET.includes(DEV_AUTH_SECRET_MARKER)) {
     problems.push({
       setting: "AUTH_SECRET",
       detail:
