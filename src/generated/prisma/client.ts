@@ -148,3 +148,27 @@ export type NewsletterSubscriber = Prisma.NewsletterSubscriberModel
  * changes, and so a failed message can be retried byte-for-byte.
  */
 export type EmailLog = Prisma.EmailLogModel
+/**
+ * Model BotConversation
+ * One continuing conversation with a customer.
+ * 
+ * Keyed by channel and an identifier meaningful to that channel: a browser
+ * session for the website, an E.164 telephone number for WhatsApp. WhatsApp
+ * delivers each message as an isolated webhook with no memory, so the thread
+ * has to live here rather than in the process.
+ * 
+ * The conversation carries a `cartId` so the bot and the website build the
+ * same basket. A customer can start on WhatsApp and finish in a browser, and
+ * the slot holds, pricing and overlap guard are the same in both.
+ */
+export type BotConversation = Prisma.BotConversationModel
+/**
+ * Model BotMessage
+ * A single turn, including the tool calls made to answer it.
+ * 
+ * Kept verbatim: it is the transcript of an interaction that can create a
+ * booking and take money, so it needs to be as auditable as the booking
+ * itself. Token counts are recorded so spend can be measured rather than
+ * guessed at.
+ */
+export type BotMessage = Prisma.BotMessageModel

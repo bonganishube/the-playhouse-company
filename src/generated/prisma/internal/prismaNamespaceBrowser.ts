@@ -67,7 +67,9 @@ export const ModelName = {
   AuditLog: 'AuditLog',
   Setting: 'Setting',
   NewsletterSubscriber: 'NewsletterSubscriber',
-  EmailLog: 'EmailLog'
+  EmailLog: 'EmailLog',
+  BotConversation: 'BotConversation',
+  BotMessage: 'BotMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -372,6 +374,36 @@ export const EmailLogScalarFieldEnum = {
 } as const
 
 export type EmailLogScalarFieldEnum = (typeof EmailLogScalarFieldEnum)[keyof typeof EmailLogScalarFieldEnum]
+
+
+export const BotConversationScalarFieldEnum = {
+  id: 'id',
+  channel: 'channel',
+  externalId: 'externalId',
+  userId: 'userId',
+  cartId: 'cartId',
+  contactName: 'contactName',
+  handedOverAt: 'handedOverAt',
+  lastActiveAt: 'lastActiveAt',
+  createdAt: 'createdAt'
+} as const
+
+export type BotConversationScalarFieldEnum = (typeof BotConversationScalarFieldEnum)[keyof typeof BotConversationScalarFieldEnum]
+
+
+export const BotMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  content: 'content',
+  toolName: 'toolName',
+  toolPayload: 'toolPayload',
+  tokensIn: 'tokensIn',
+  tokensOut: 'tokensOut',
+  createdAt: 'createdAt'
+} as const
+
+export type BotMessageScalarFieldEnum = (typeof BotMessageScalarFieldEnum)[keyof typeof BotMessageScalarFieldEnum]
 
 
 export const SortOrder = {

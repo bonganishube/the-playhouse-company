@@ -589,3 +589,80 @@ model EmailLog {
   @@index([status, attempts])
   @@map("email_logs")
 }
+
+// ---------------------------------------------------------------------------
+// Conversational booking
+// ---------------------------------------------------------------------------
+
+enum BotChannel {
+  WEB
+  WHATSAPP
+}
+
+enum BotRole {
+  USER
+  MODEL
+  /// The result of a tool the model asked us to run.
+  TOOL
+}
+
+/// One continuing conversation with a customer.
+///
+/// Keyed by channel and an identifier meaningful to that channel: a browser
+/// session for the website, an E.164 telephone number for WhatsApp. WhatsApp
+/// delivers each message as an isolated webhook with no memory, so the thread
+/// has to live here rather than in the process.
+///
+/// The conversation carries a `cartId` so the bot and the website build the
+/// same basket. A customer can start on WhatsApp and finish in a browser, and
+/// the slot holds, pricing and overlap guard are the same in both.
+model BotConversation {
+  id         String     @id @default(cuid())
+  channel    BotChannel
+  /// Browser session id, or telephone number in E.164 form.
+  externalId String
+  userId     String?
+  cartId     String?
+  /// Display name as the channel reports it, for greeting the customer.
+  contactName String?
+
+  /// Set when a human has taken over, which silences the bot for this thread.
+  handedOverAt DateTime?
+
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  messages BotMessage[]
+
+  @@unique([channel, externalId])
+  @@index([lastActiveAt])
+  @@map("bot_conversations")
+}
+
+/// A single turn, including the tool calls made to answer it.
+///
+/// Kept verbatim: it is the transcript of an interaction that can create a
+/// booking and take money, so it needs to be as auditable as the booking
+/// itself. Token counts are recorded so spend can be measured rather than
+/// guessed at.
+model BotMessage {
+  id             String  @id @default(cuid())
+  conversationId String
+  role           BotRole
+  content        String  @db.Text
+
+  /// Populated on TOOL rows: which tool ran, with what arguments and result.
+  toolName    String?
+  toolPayload Json?
+
+  tokensIn  Int @default(0)
+  tokensOut Int @default(0)
+
+  createdAt DateTime @default(now())
+
+  conversation BotConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([createdAt])
+  @@map("bot_messages")
+}

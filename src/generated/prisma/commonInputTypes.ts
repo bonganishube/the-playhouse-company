@@ -562,6 +562,40 @@ export type EnumEmailStatusWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumEmailStatusFilter<$PrismaModel>
 }
 
+export type EnumBotChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.BotChannel | Prisma.EnumBotChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.BotChannel[] | Prisma.ListEnumBotChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BotChannel[] | Prisma.ListEnumBotChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBotChannelFilter<$PrismaModel> | $Enums.BotChannel
+}
+
+export type EnumBotChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BotChannel | Prisma.EnumBotChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.BotChannel[] | Prisma.ListEnumBotChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BotChannel[] | Prisma.ListEnumBotChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBotChannelWithAggregatesFilter<$PrismaModel> | $Enums.BotChannel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBotChannelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBotChannelFilter<$PrismaModel>
+}
+
+export type EnumBotRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.BotRole | Prisma.EnumBotRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.BotRole[] | Prisma.ListEnumBotRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BotRole[] | Prisma.ListEnumBotRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBotRoleFilter<$PrismaModel> | $Enums.BotRole
+}
+
+export type EnumBotRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BotRole | Prisma.EnumBotRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.BotRole[] | Prisma.ListEnumBotRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BotRole[] | Prisma.ListEnumBotRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBotRoleWithAggregatesFilter<$PrismaModel> | $Enums.BotRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBotRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBotRoleFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -1067,6 +1101,40 @@ export type NestedEnumEmailStatusWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumEmailStatusFilter<$PrismaModel>
   _max?: Prisma.NestedEnumEmailStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumBotChannelFilter<$PrismaModel = never> = {
+  equals?: $Enums.BotChannel | Prisma.EnumBotChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.BotChannel[] | Prisma.ListEnumBotChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BotChannel[] | Prisma.ListEnumBotChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBotChannelFilter<$PrismaModel> | $Enums.BotChannel
+}
+
+export type NestedEnumBotChannelWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BotChannel | Prisma.EnumBotChannelFieldRefInput<$PrismaModel>
+  in?: $Enums.BotChannel[] | Prisma.ListEnumBotChannelFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BotChannel[] | Prisma.ListEnumBotChannelFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBotChannelWithAggregatesFilter<$PrismaModel> | $Enums.BotChannel
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBotChannelFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBotChannelFilter<$PrismaModel>
+}
+
+export type NestedEnumBotRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.BotRole | Prisma.EnumBotRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.BotRole[] | Prisma.ListEnumBotRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BotRole[] | Prisma.ListEnumBotRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBotRoleFilter<$PrismaModel> | $Enums.BotRole
+}
+
+export type NestedEnumBotRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BotRole | Prisma.EnumBotRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.BotRole[] | Prisma.ListEnumBotRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BotRole[] | Prisma.ListEnumBotRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBotRoleWithAggregatesFilter<$PrismaModel> | $Enums.BotRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBotRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBotRoleFilter<$PrismaModel>
 }
 
 

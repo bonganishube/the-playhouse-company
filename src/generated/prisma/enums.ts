@@ -130,3 +130,20 @@ export const EmailStatus = {
 } as const
 
 export type EmailStatus = (typeof EmailStatus)[keyof typeof EmailStatus]
+
+
+export const BotChannel = {
+  WEB: 'WEB',
+  WHATSAPP: 'WHATSAPP'
+} as const
+
+export type BotChannel = (typeof BotChannel)[keyof typeof BotChannel]
+
+
+export const BotRole = {
+  USER: 'USER',
+  MODEL: 'MODEL',
+  TOOL: 'TOOL'
+} as const
+
+export type BotRole = (typeof BotRole)[keyof typeof BotRole]
