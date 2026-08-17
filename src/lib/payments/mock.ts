@@ -35,8 +35,24 @@ export const mock: PaymentGateway = {
   id: GatewayId.MOCK,
   displayName: "Simulated payment (development)",
 
+  /**
+   * Available in development, and in production only under explicit protest.
+   *
+   * Refusing outright in production is the right default: a simulated gateway
+   * confirms bookings without taking money, and nothing should be able to
+   * switch that on by accident. But it also broke the one deployment that
+   * legitimately needs it, a hosted demonstration for the client to review,
+   * where checkout would offer no payment method at all.
+   *
+   * ALLOW_UNSAFE_PRODUCTION is the same flag that already lets such a
+   * deployment start, and it is deliberately awkward: the server logs a
+   * warning on every boot while it is set, and preflight reports it. So the
+   * demonstration works, and a real launch still cannot reach live traffic
+   * with simulated payments behind it.
+   */
   isConfigured() {
-    return process.env.NODE_ENV !== "production";
+    if (process.env.NODE_ENV !== "production") return true;
+    return process.env.ALLOW_UNSAFE_PRODUCTION === "true";
   },
 
   async createCheckout(request: CheckoutRequest): Promise<CheckoutResult> {
