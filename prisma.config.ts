@@ -1,5 +1,5 @@
 import path from "node:path";
-import { defineConfig, env } from "prisma/config";
+import { defineConfig } from "prisma/config";
 
 // Prisma 7 no longer implicitly loads .env for the CLI.
 try {
@@ -18,7 +18,15 @@ export default defineConfig({
     // an error here. The application itself still uses the pooled
     // DATABASE_URL. Falls back when unset, so a plain local Postgres, which
     // has no separate endpoints, needs no extra configuration.
-    url: process.env.DIRECT_DATABASE_URL || env("DATABASE_URL"),
+    // `env()` throws when the variable is absent, which took down the whole
+    // build: `prisma generate` runs before `next build` and needs no database
+    // at all, only the schema. A placeholder keeps generation working on a
+    // build machine without secrets, while migrate and studio, which do
+    // connect, fail against it immediately and unmistakably.
+    url:
+      process.env.DIRECT_DATABASE_URL ||
+      process.env.DATABASE_URL ||
+      "postgresql://unset:unset@127.0.0.1:5432/unset?schema=public",
   },
   migrations: {
     path: path.join("prisma", "migrations"),
