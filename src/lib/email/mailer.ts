@@ -222,14 +222,30 @@ export async function attemptDelivery(logId: string): Promise<MailResult> {
  * Messages recorded while SMTP was absent are picked up too, so configuring
  * the mail server delivers the backlog rather than losing it.
  */
-export async function retryQueuedEmails(limit = 50): Promise<{
+export async function retryQueuedEmails(
+  limit = 50,
+  /**
+   * Stop starting new sends after this instant.
+   *
+   * A serverless function is killed at its time limit with no warning, and on
+   * Vercel's Hobby plan that limit is sixty seconds while fifty slow SMTP
+   * sends take closer to three minutes. Bounding by count alone cannot solve
+   * that, because how long a send takes depends on the provider, not on us.
+   * Stopping on the clock instead means each run finishes cleanly and the
+   * remainder is simply picked up next time; every message is retried
+   * independently, so a partial pass loses nothing.
+   */
+  deadline?: number,
+): Promise<{
   attempted: number;
   sent: number;
+  /** True when work was left because the time budget ran out. */
+  moreWaiting: boolean;
 }> {
   // Nothing to retry against when messages are only being recorded.
-  if (env.MAIL_TRANSPORT === "none") return { attempted: 0, sent: 0 };
+  if (env.MAIL_TRANSPORT === "none") return { attempted: 0, sent: 0, moreWaiting: false };
   if (env.MAIL_TRANSPORT !== "ethereal" && !env.SMTP_HOST) {
-    return { attempted: 0, sent: 0 };
+    return { attempted: 0, sent: 0, moreWaiting: false };
   }
 
   const pending = await prisma.emailLog.findMany({
@@ -243,7 +259,17 @@ export async function retryQueuedEmails(limit = 50): Promise<{
   });
 
   let sent = 0;
+  let attempted = 0;
   for (const row of pending) {
+    if (deadline && Date.now() >= deadline) {
+      console.info(
+        `[mail] time budget reached after ${attempted} of ${pending.length}; ` +
+          `the rest will be retried on the next run`,
+      );
+      return { attempted, sent, moreWaiting: true };
+    }
+
+    attempted += 1;
     await prisma.emailLog.update({
       where: { id: row.id },
       data: { attempts: { increment: 1 } },
@@ -254,7 +280,7 @@ export async function retryQueuedEmails(limit = 50): Promise<{
     }
   }
 
-  return { attempted: pending.length, sent };
+  return { attempted, sent, moreWaiting: pending.length === limit };
 }
 
 /** Send an existing message again, resetting its attempt allowance. */

@@ -13,7 +13,7 @@ deployment that takes no real bookings.
 
 ## 1. Scheduled maintenance
 
-`vercel.json` runs `/api/maintenance/sweep` every five minutes. That job:
+`vercel.json` runs `/api/maintenance/sweep` once a day at 02:00 UTC. That job:
 
 - releases expired cart holds, so an abandoned cart stops blocking a venue
 - retries failed email, up to five attempts before a message is abandoned
@@ -21,10 +21,23 @@ deployment that takes no real bookings.
 - purges spent password reset tokens
 - pushes confirmed bookings to Outlook, once that is configured
 
-**Vercel plan matters.** Minute-level schedules need Pro. On Hobby, cron runs
-once a day, which is too slow for cart holds: change the schedule to
-`0 * * * *` at minimum, or run the sweep from an external scheduler instead.
-Any scheduler works, it is one authenticated HTTP request:
+**The schedule is daily because Vercel's Hobby plan allows nothing more
+frequent**, and it rejects the deployment outright otherwise. That is safe
+here, because nothing depends on the sweep for correctness:
+
+- **Expired cart holds** are released whenever availability is read *and* at
+  the moment another customer tries to book the slot, so an abandoned cart
+  never blocks a venue while waiting for the cron.
+- **Lost webhooks** are reconciled when the customer returns from the payment
+  page, so a booking is confirmed within seconds rather than at the next sweep.
+- **Failed email** can be resent immediately from Admin → Bookings →
+  Correspondence.
+
+The sweep is therefore housekeeping, not a load-bearing part of the booking
+flow. On Pro, tighten it to `*/5 * * * *` and raise `maxDuration` to 300.
+
+To run it more often on Hobby, drive it from any external scheduler; it is one
+authenticated HTTP request:
 
 ```bash
 curl -X POST https://<your-domain>/api/maintenance/sweep \
@@ -34,9 +47,13 @@ curl -X POST https://<your-domain>/api/maintenance/sweep \
 Vercel Cron sends that header automatically when `CRON_SECRET` is set as a
 project environment variable. The endpoint refuses every request without it.
 
-The sweep took 166 seconds against a database in `us-east-1`, so
-`maxDuration` is set to 300. Hobby caps functions at 60 seconds, which is
-another reason that plan does not suit this job.
+**Function time limits.** Hobby stops a function at 60 seconds; a backlog of
+slow SMTP sends took 166. The sweep therefore works to a clock:
+`SWEEP_TIME_BUDGET_MS` (default 30 000) stops it starting new sends before the
+platform can kill it mid-flight, and the response reports `emailsRemaining`
+when work was left. Every message is retried independently, so a partial pass
+loses nothing and the remainder goes next time. Raise the budget to 240 000 on
+Pro alongside `maxDuration`.
 
 ---
 

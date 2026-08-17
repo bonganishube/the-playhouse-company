@@ -38,11 +38,17 @@ export async function POST(request: Request) {
   // standing liability if the database is ever exposed.
   const resetTokensPurged = await purgeExpiredResetTokens();
 
+  // Leave the run enough room to answer before the platform kills it. Vercel's
+  // Hobby plan stops a function at 60 seconds, Pro at 300, so the budget is
+  // configurable rather than assumed; email is the only step long enough to
+  // need it, and it stops on the clock and resumes next time.
+  const budgetMs = Number(process.env.SWEEP_TIME_BUDGET_MS ?? 30_000);
+
   const [holdsReleased, bookingsExpired, calendarsSynced, mail] = await Promise.all([
     releaseExpiredHolds(),
     expireStalePayments(),
     resyncPendingCalendarEvents(),
-    retryQueuedEmails(),
+    retryQueuedEmails(50, startedAt + budgetMs),
   ]);
 
   return NextResponse.json({
@@ -54,6 +60,7 @@ export async function POST(request: Request) {
     calendarsSynced,
     emailsRetried: mail.attempted,
     emailsSent: mail.sent,
+    emailsRemaining: mail.moreWaiting,
     durationMs: Date.now() - startedAt,
   });
 }

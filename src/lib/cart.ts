@@ -258,6 +258,19 @@ export async function addToCart(
   startsAt: Date,
   endsAt: Date,
 ): Promise<AddToCartResult> {
+  // Clear lapsed holds before testing the slot.
+  //
+  // A hold that has expired is still an ordinary HELD row until something
+  // retires it, and both checkSlot and the database's exclusion constraint
+  // count it as occupancy. Without this line an abandoned cart would keep a
+  // venue unbookable until the maintenance sweep happened to run, which on a
+  // once-a-day schedule could be most of a day. Availability *views* already
+  // do this, but a booking must not depend on someone having browsed first.
+  //
+  // The query is a single indexed update on (status, holdExpiresAt), so the
+  // cost of doing it here is negligible next to the cost of losing a booking.
+  await releaseExpiredHolds();
+
   const check = await checkSlot(venueId, startsAt, endsAt);
   if (!check.ok) {
     return { ok: false, message: check.message, code: check.code };

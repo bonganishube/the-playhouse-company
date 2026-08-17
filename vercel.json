@@ -3,12 +3,12 @@
   "crons": [
     {
       "path": "/api/maintenance/sweep",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 2 * * *"
     }
   ],
   "functions": {
     "src/app/api/maintenance/sweep/route.ts": {
-      "maxDuration": 300
+      "maxDuration": 60
     }
   }
 }
