@@ -448,3 +448,107 @@ function escape(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 }
+
+/**
+ * Password reset, and first-time password for an account created at checkout.
+ *
+ * The wording has to serve both without confusing either: someone who booked
+ * as a guest never chose a password, so "reset yours" would read as an error
+ * to them, while "set one" would puzzle a returning customer. "Set a password"
+ * covers both truthfully.
+ */
+export function passwordReset(data: {
+  fullName: string;
+  url: string;
+  ttlMinutes: number;
+  /** True when the account has never had a usable password. */
+  firstTime: boolean;
+}) {
+  const opening = data.firstTime
+    ? `<p>Your booking created an account with us so you can view it, download invoices and settle
+        any outstanding balance. Choose a password to finish setting it up.</p>`
+    : `<p>We received a request to set a new password for your account.</p>`;
+
+  const html = layout(
+    "Set your password",
+    `<p>Dear ${escape(data.fullName)},</p>
+     ${opening}
+     ${button(data.url, "Set your password")}
+     <p style="color:${MUTED};font-size:13px;">This link works once and expires in
+        ${escape(String(data.ttlMinutes))} minutes.</p>
+     <p style="color:${MUTED};font-size:13px;">If you did not ask for this, no action is needed.
+        Your current password, if you have one, remains unchanged and nobody can use this link
+        without access to your inbox.</p>
+     <p style="color:${MUTED};font-size:12px;word-break:break-all;">If the button does not work,
+        paste this into your browser:<br>${escape(data.url)}</p>`,
+  );
+
+  const text = [
+    `Dear ${data.fullName},`,
+    ``,
+    data.firstTime
+      ? `Your booking created an account with us. Choose a password to finish setting it up.`
+      : `We received a request to set a new password for your account.`,
+    ``,
+    data.url,
+    ``,
+    `This link works once and expires in ${data.ttlMinutes} minutes.`,
+    `If you did not ask for this, no action is needed.`,
+  ].join("\n");
+
+  return { subject: "Set your Playhouse Company password", html, text };
+}
+
+/**
+ * Confirmation that a refund has been issued.
+ *
+ * Sent when the money is actually sent back, not when it is decided, because a
+ * customer reading "refunded" will start watching their statement and the two
+ * events can be days apart.
+ */
+export function refundIssued(data: {
+  reference: string;
+  contactName: string;
+  amountCents: number;
+  currency: string;
+  receiptNumber: string | null;
+  reason: string;
+  manual: boolean;
+  bookingUrl: string;
+}) {
+  const settlement = data.manual
+    ? `<p>The refund is being made by our finance team directly to the account used for payment.
+        Please allow a few working days for it to appear.</p>`
+    : `<p>The refund has been sent to your original method of payment. Depending on your bank it
+        usually appears within three to ten working days.</p>`;
+
+  const html = layout(
+    `Refund issued: ${data.reference}`,
+    `<p>Dear ${escape(data.contactName)},</p>
+     <p>A refund of <strong>${escape(formatCents(data.amountCents, data.currency))}</strong> has been
+        issued against your booking.</p>
+     ${referenceBadge(data.reference)}
+     <p><strong>Reason:</strong> ${escape(data.reason)}</p>
+     ${data.receiptNumber ? `<p style="color:${MUTED};font-size:13px;">Original receipt: ${escape(data.receiptNumber)}</p>` : ""}
+     ${settlement}
+     ${button(data.bookingUrl, "View your booking")}`,
+  );
+
+  const text = [
+    `Dear ${data.contactName},`,
+    ``,
+    `A refund of ${formatCents(data.amountCents, data.currency)} has been issued against booking ${data.reference}.`,
+    `Reason: ${data.reason}`,
+    data.receiptNumber ? `Original receipt: ${data.receiptNumber}` : "",
+    ``,
+    data.manual
+      ? `Our finance team is making the refund directly to the account used for payment.`
+      : `The refund has been sent to your original method of payment, and usually appears within three to ten working days.`,
+    ``,
+    data.bookingUrl,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return { subject: `Refund issued: ${data.reference}`, html, text };
+}

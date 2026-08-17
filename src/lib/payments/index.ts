@@ -138,3 +138,8 @@ export function gatewayCatalogue(): GatewayOption[] {
 }
 
 export { payfast, yoco, paystack, ikhokha, stripeGateway, mock };
+
+/** Whether a provider can send money back through its API. */
+export function gatewaySupportsRefund(id: GatewayId): boolean {
+  return typeof REGISTRY[id]?.refund === "function";
+}

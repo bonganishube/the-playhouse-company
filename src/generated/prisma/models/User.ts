@@ -226,6 +226,7 @@ export type UserWhereInput = {
   carts?: Prisma.CartListRelationFilter
   managedVenues?: Prisma.VenueManagerListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  passwordResets?: Prisma.PasswordResetTokenListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -243,6 +244,7 @@ export type UserOrderByWithRelationInput = {
   carts?: Prisma.CartOrderByRelationAggregateInput
   managedVenues?: Prisma.VenueManagerOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  passwordResets?: Prisma.PasswordResetTokenOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -263,6 +265,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   carts?: Prisma.CartListRelationFilter
   managedVenues?: Prisma.VenueManagerListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  passwordResets?: Prisma.PasswordResetTokenListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -312,6 +315,7 @@ export type UserCreateInput = {
   carts?: Prisma.CartCreateNestedManyWithoutUserInput
   managedVenues?: Prisma.VenueManagerCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -329,6 +333,7 @@ export type UserUncheckedCreateInput = {
   carts?: Prisma.CartUncheckedCreateNestedManyWithoutUserInput
   managedVenues?: Prisma.VenueManagerUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserUpdateInput = {
@@ -346,6 +351,7 @@ export type UserUpdateInput = {
   carts?: Prisma.CartUpdateManyWithoutUserNestedInput
   managedVenues?: Prisma.VenueManagerUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -363,6 +369,7 @@ export type UserUncheckedUpdateInput = {
   carts?: Prisma.CartUncheckedUpdateManyWithoutUserNestedInput
   managedVenues?: Prisma.VenueManagerUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -473,6 +480,20 @@ export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }
 
+export type UserCreateNestedOneWithoutPasswordResetsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPasswordResetsInput, Prisma.UserUncheckedCreateWithoutPasswordResetsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPasswordResetsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutPasswordResetsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutPasswordResetsInput, Prisma.UserUncheckedCreateWithoutPasswordResetsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutPasswordResetsInput
+  upsert?: Prisma.UserUpsertWithoutPasswordResetsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPasswordResetsInput, Prisma.UserUpdateWithoutPasswordResetsInput>, Prisma.UserUncheckedUpdateWithoutPasswordResetsInput>
+}
+
 export type UserCreateNestedOneWithoutManagedVenuesInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutManagedVenuesInput, Prisma.UserUncheckedCreateWithoutManagedVenuesInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutManagedVenuesInput
@@ -533,6 +554,90 @@ export type UserUpdateOneWithoutAuditLogsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.UserUpdateWithoutAuditLogsInput>, Prisma.UserUncheckedUpdateWithoutAuditLogsInput>
 }
 
+export type UserCreateWithoutPasswordResetsInput = {
+  id?: string
+  email: string
+  passwordHash?: string | null
+  fullName: string
+  phone?: string | null
+  organisation?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartCreateNestedManyWithoutUserInput
+  managedVenues?: Prisma.VenueManagerCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+}
+
+export type UserUncheckedCreateWithoutPasswordResetsInput = {
+  id?: string
+  email: string
+  passwordHash?: string | null
+  fullName: string
+  phone?: string | null
+  organisation?: string | null
+  role?: $Enums.Role
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
+  carts?: Prisma.CartUncheckedCreateNestedManyWithoutUserInput
+  managedVenues?: Prisma.VenueManagerUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+}
+
+export type UserCreateOrConnectWithoutPasswordResetsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutPasswordResetsInput, Prisma.UserUncheckedCreateWithoutPasswordResetsInput>
+}
+
+export type UserUpsertWithoutPasswordResetsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutPasswordResetsInput, Prisma.UserUncheckedUpdateWithoutPasswordResetsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutPasswordResetsInput, Prisma.UserUncheckedCreateWithoutPasswordResetsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutPasswordResetsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutPasswordResetsInput, Prisma.UserUncheckedUpdateWithoutPasswordResetsInput>
+}
+
+export type UserUpdateWithoutPasswordResetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organisation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUpdateManyWithoutUserNestedInput
+  managedVenues?: Prisma.VenueManagerUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+}
+
+export type UserUncheckedUpdateWithoutPasswordResetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  organisation?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
+  carts?: Prisma.CartUncheckedUpdateManyWithoutUserNestedInput
+  managedVenues?: Prisma.VenueManagerUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+}
+
 export type UserCreateWithoutManagedVenuesInput = {
   id?: string
   email: string
@@ -547,6 +652,7 @@ export type UserCreateWithoutManagedVenuesInput = {
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   carts?: Prisma.CartCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutManagedVenuesInput = {
@@ -563,6 +669,7 @@ export type UserUncheckedCreateWithoutManagedVenuesInput = {
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   carts?: Prisma.CartUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutManagedVenuesInput = {
@@ -595,6 +702,7 @@ export type UserUpdateWithoutManagedVenuesInput = {
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   carts?: Prisma.CartUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutManagedVenuesInput = {
@@ -611,6 +719,7 @@ export type UserUncheckedUpdateWithoutManagedVenuesInput = {
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   carts?: Prisma.CartUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutCartsInput = {
@@ -627,6 +736,7 @@ export type UserCreateWithoutCartsInput = {
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   managedVenues?: Prisma.VenueManagerCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutCartsInput = {
@@ -643,6 +753,7 @@ export type UserUncheckedCreateWithoutCartsInput = {
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   managedVenues?: Prisma.VenueManagerUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutCartsInput = {
@@ -675,6 +786,7 @@ export type UserUpdateWithoutCartsInput = {
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   managedVenues?: Prisma.VenueManagerUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCartsInput = {
@@ -691,6 +803,7 @@ export type UserUncheckedUpdateWithoutCartsInput = {
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   managedVenues?: Prisma.VenueManagerUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutBookingsInput = {
@@ -707,6 +820,7 @@ export type UserCreateWithoutBookingsInput = {
   carts?: Prisma.CartCreateNestedManyWithoutUserInput
   managedVenues?: Prisma.VenueManagerCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutActorInput
+  passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutBookingsInput = {
@@ -723,6 +837,7 @@ export type UserUncheckedCreateWithoutBookingsInput = {
   carts?: Prisma.CartUncheckedCreateNestedManyWithoutUserInput
   managedVenues?: Prisma.VenueManagerUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutActorInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutBookingsInput = {
@@ -755,6 +870,7 @@ export type UserUpdateWithoutBookingsInput = {
   carts?: Prisma.CartUpdateManyWithoutUserNestedInput
   managedVenues?: Prisma.VenueManagerUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutActorNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBookingsInput = {
@@ -771,6 +887,7 @@ export type UserUncheckedUpdateWithoutBookingsInput = {
   carts?: Prisma.CartUncheckedUpdateManyWithoutUserNestedInput
   managedVenues?: Prisma.VenueManagerUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutActorNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -787,6 +904,7 @@ export type UserCreateWithoutAuditLogsInput = {
   bookings?: Prisma.BookingCreateNestedManyWithoutUserInput
   carts?: Prisma.CartCreateNestedManyWithoutUserInput
   managedVenues?: Prisma.VenueManagerCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetTokenCreateNestedManyWithoutUserInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -803,6 +921,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutUserInput
   carts?: Prisma.CartUncheckedCreateNestedManyWithoutUserInput
   managedVenues?: Prisma.VenueManagerUncheckedCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedCreateNestedManyWithoutUserInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -835,6 +954,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   bookings?: Prisma.BookingUpdateManyWithoutUserNestedInput
   carts?: Prisma.CartUpdateManyWithoutUserNestedInput
   managedVenues?: Prisma.VenueManagerUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUpdateManyWithoutUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -851,6 +971,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutUserNestedInput
   carts?: Prisma.CartUncheckedUpdateManyWithoutUserNestedInput
   managedVenues?: Prisma.VenueManagerUncheckedUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetTokenUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -863,6 +984,7 @@ export type UserCountOutputType = {
   carts: number
   managedVenues: number
   auditLogs: number
+  passwordResets: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -870,6 +992,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   carts?: boolean | UserCountOutputTypeCountCartsArgs
   managedVenues?: boolean | UserCountOutputTypeCountManagedVenuesArgs
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
+  passwordResets?: boolean | UserCountOutputTypeCountPasswordResetsArgs
 }
 
 /**
@@ -910,6 +1033,13 @@ export type UserCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.
   where?: Prisma.AuditLogWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountPasswordResetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PasswordResetTokenWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -926,6 +1056,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   carts?: boolean | Prisma.User$cartsArgs<ExtArgs>
   managedVenues?: boolean | Prisma.User$managedVenuesArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  passwordResets?: boolean | Prisma.User$passwordResetsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -974,6 +1105,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   carts?: boolean | Prisma.User$cartsArgs<ExtArgs>
   managedVenues?: boolean | Prisma.User$managedVenuesArgs<ExtArgs>
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  passwordResets?: boolean | Prisma.User$passwordResetsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -986,6 +1118,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     carts: Prisma.$CartPayload<ExtArgs>[]
     managedVenues: Prisma.$VenueManagerPayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    passwordResets: Prisma.$PasswordResetTokenPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1396,6 +1529,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   carts<T extends Prisma.User$cartsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$cartsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CartPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   managedVenues<T extends Prisma.User$managedVenuesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$managedVenuesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VenueManagerPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  passwordResets<T extends Prisma.User$passwordResetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$passwordResetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PasswordResetTokenPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1921,6 +2055,30 @@ export type User$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * User.passwordResets
+ */
+export type User$passwordResetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PasswordResetToken
+   */
+  select?: Prisma.PasswordResetTokenSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PasswordResetToken
+   */
+  omit?: Prisma.PasswordResetTokenOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PasswordResetTokenInclude<ExtArgs> | null
+  where?: Prisma.PasswordResetTokenWhereInput
+  orderBy?: Prisma.PasswordResetTokenOrderByWithRelationInput | Prisma.PasswordResetTokenOrderByWithRelationInput[]
+  cursor?: Prisma.PasswordResetTokenWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PasswordResetTokenScalarFieldEnum | Prisma.PasswordResetTokenScalarFieldEnum[]
 }
 
 /**

@@ -6,6 +6,7 @@ import { PaymentReconciler } from "@/components/PaymentReconciler";
 import { Alert, ButtonLink, Card, DetailRow, StatusBadge } from "@/components/ui";
 import { getSession, isStaffRole } from "@/lib/auth";
 import { formatCents, toCents } from "@/lib/money";
+import { activeGateway, gatewayCatalogue } from "@/lib/payments";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, formatRange } from "@/lib/time";
 
@@ -47,6 +48,17 @@ export default async function BookingPage({
   const outstandingCents = totalCents - paidCents;
   const dueNowCents = toCents(booking.amountDue) - paidCents;
   const isLive = !["CANCELLED", "REJECTED", "COMPLETED"].includes(booking.status);
+
+  // Same provider list the customer saw at checkout, so settling a balance
+  // offers the same choice rather than silently using whichever gateway took
+  // the deposit.
+  const gateways = gatewayCatalogue();
+  let gatewayError: string | null = null;
+  try {
+    activeGateway();
+  } catch (error) {
+    gatewayError = error instanceof Error ? error.message : "Payment is unavailable.";
+  }
 
   return (
     <>
@@ -170,12 +182,6 @@ export default async function BookingPage({
             </div>
           )}
 
-          {outstandingCents > 0 && booking.status !== "PENDING_PAYMENT" && isLive && (
-            <PayBalance
-              reference={booking.reference}
-              outstandingLabel={formatCents(outstandingCents, booking.currency)}
-            />
-          )}
         </Card>
 
         <Card className="p-5">
@@ -199,12 +205,27 @@ export default async function BookingPage({
         </Card>
       </div>
 
+      {/* Full width rather than inside the payment summary column: five
+          providers in a half-width column wrap badly and push the pay button
+          off the fold. */}
+      {outstandingCents > 0 && booking.status !== "PENDING_PAYMENT" && isLive && (
+        <PayBalance
+          reference={booking.reference}
+          outstandingLabel={formatCents(outstandingCents, booking.currency)}
+          gateways={gateways}
+          gatewayError={gatewayError}
+        />
+      )}
+
       {booking.payments.length > 0 && (
         <Card className="mt-6">
           <h2 className="border-b border-parchment-300 px-5 py-3 text-lg">
             Payment history
           </h2>
-          <table className="w-full text-sm">
+          {/* Five columns do not fit a phone. The table scrolls inside its own
+              box so the page itself does not scroll sideways. */}
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[34rem] text-sm">
             <thead className="bg-parchment-100 text-left text-xs uppercase tracking-wide text-ink-500">
               <tr>
                 <th className="px-5 py-2 font-medium">Date</th>
@@ -217,11 +238,13 @@ export default async function BookingPage({
             <tbody className="divide-y divide-parchment-200">
               {booking.payments.map((payment) => (
                 <tr key={payment.id}>
-                  <td className="px-5 py-2 tabular">
+                  <td className="whitespace-nowrap px-5 py-2 tabular">
                     {formatDateTime(payment.paidAt ?? payment.createdAt)}
                   </td>
-                  <td className="px-5 py-2 font-mono text-xs">
-                    {payment.receiptNumber ?? ", "}
+                  <td className="whitespace-nowrap px-5 py-2 font-mono text-xs">
+                    {payment.receiptNumber ?? (
+                      <span className="font-sans text-ink-500">Not issued</span>
+                    )}
                   </td>
                   <td className="px-5 py-2">{payment.gateway}</td>
                   <td className="px-5 py-2 text-right tabular">
@@ -234,6 +257,7 @@ export default async function BookingPage({
               ))}
             </tbody>
           </table>
+          </div>
         </Card>
       )}
 

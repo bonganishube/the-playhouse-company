@@ -74,16 +74,29 @@ export function SiteNav({
         className="hidden items-center justify-end pt-14 pb-5 text-[17px] font-medium text-white md:flex"
         aria-label="Primary"
       >
-        <NavDropdown label="Venues" href="/venues" items={venueLinks} />
-        <NavLink href="/booking">Find a booking</NavLink>
-        <NavLink href="/cart">
+        <NavDropdown
+          label="Venues"
+          href="/venues"
+          items={venueLinks}
+          active={isActivePath(pathname, "/venues")}
+        />
+        <NavLink href="/booking" active={isActivePath(pathname, "/booking")}>
+          Find a booking
+        </NavLink>
+        <NavLink href="/cart" active={isActivePath(pathname, "/cart")}>
           <span className="inline-flex items-center gap-2">
             <CartWithBadge count={cartCount} />
             Cart
           </span>
         </NavLink>
-        {isStaff && <NavLink href="/admin">Admin</NavLink>}
-        <NavLink href={accountHref}>{accountLabel}</NavLink>
+        {isStaff && (
+          <NavLink href="/admin" active={isActivePath(pathname, "/admin")}>
+            Admin
+          </NavLink>
+        )}
+        <NavLink href={accountHref} active={isActivePath(pathname, accountHref)}>
+          {accountLabel}
+        </NavLink>
       </nav>
 
       {/* -------------------------------------------------- mobile trigger */}
@@ -202,17 +215,39 @@ function CartWithBadge({
   );
 }
 
+
+/**
+ * Is this link the page currently being viewed?
+ *
+ * Section matching rather than exact, so a venue detail page still marks
+ * "Venues" as current. "/" is excluded from that, or it would match
+ * everything and every item would look active at once.
+ */
+function isActivePath(pathname: string, href: string): boolean {
+  if (href === "/") return pathname === "/";
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
 function NavLink({
   href,
+  active,
   children,
 }: {
   href: string;
+  active?: boolean;
   children: React.ReactNode;
 }) {
   return (
     <Link
       href={href}
-      className="whitespace-nowrap px-3 py-2 transition-colors hover:text-gold-400"
+      // The current page wears the hover colour permanently, so the highlight
+      // a pointer produces and the one marking your location are the same
+      // thing. aria-current carries that to a screen reader, which cannot see
+      // the colour at all.
+      aria-current={active ? "page" : undefined}
+      className={`whitespace-nowrap px-3 py-2 transition-colors hover:text-gold-400 ${
+        active ? "text-gold-400" : ""
+      }`}
     >
       {children}
     </Link>
@@ -248,16 +283,21 @@ function NavDropdown({
   label,
   href,
   items,
+  active,
 }: {
   label: string;
   href: string;
   items: NavChild[];
+  active?: boolean;
 }) {
   return (
     <div className="group relative">
       <Link
         href={href}
-        className="inline-block whitespace-nowrap px-3 py-2 transition-colors hover:text-gold-400 group-focus-within:text-gold-400"
+        aria-current={active ? "page" : undefined}
+        className={`inline-block whitespace-nowrap px-3 py-2 transition-colors hover:text-gold-400 group-focus-within:text-gold-400 ${
+          active ? "text-gold-400" : ""
+        }`}
       >
         {label}
       </Link>

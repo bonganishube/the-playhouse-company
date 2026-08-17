@@ -376,6 +376,19 @@ async function main() {
     owed > 0 && beforeBalance.status === "CONFIRMED",
   );
 
+  // The outstanding payments report is checked here, while this run has
+  // genuinely left a balance owing, and again in section 6 once it is settled.
+  // Asserting only at the end would be satisfied by any partly-paid booking
+  // left behind by an earlier run, so on a database that had been used before
+  // it passed without this run having proved anything.
+  const owedReport = await reports.outstandingPayments();
+  check(
+    `outstanding payments report lists the balance (${formatCents(owedReport.totals.outstandingCents)} across ${owedReport.totals.count})`,
+    owedReport.rows.some(
+      (r) => r.reference === beforeBalance.reference && r.outstandingCents === owed,
+    ),
+  );
+
   const { payment: balancePayment } = await initiatePayment(
     operaBooking.bookingId,
     PaymentPurpose.BALANCE,
@@ -494,8 +507,8 @@ async function main() {
 
   const outstanding = await reports.outstandingPayments();
   check(
-    `outstanding payments. ${formatCents(outstanding.totals.outstandingCents)} across ${outstanding.totals.count}`,
-    outstanding.totals.outstandingCents >= toCents(opera3.total) / 2,
+    `outstanding payments drops the settled booking (${formatCents(outstanding.totals.outstandingCents)} across ${outstanding.totals.count})`,
+    !outstanding.rows.some((r) => r.reference === afterBalance.reference),
   );
 
   const utilisation = await reports.venueUtilisation(range);

@@ -5,6 +5,7 @@ import {
   CancelPanel,
   CancellationRequestPanel,
   PaymentPanel,
+  RefundPanel,
 } from "@/components/admin/BookingActions";
 import { NotificationsPanel } from "@/components/admin/NotificationsPanel";
 import { Card, DetailRow, StatusBadge } from "@/components/ui";
@@ -12,6 +13,8 @@ import { can, requireCapability, venueScopeFor } from "@/lib/auth";
 import { mailDeliversToRecipients } from "@/lib/env";
 import { formatCents, toCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
+import { refundableCents } from "@/lib/refunds";
+import { gatewaySupportsRefund } from "@/lib/payments";
 import { formatDateTime, formatRange } from "@/lib/time";
 
 export const dynamic = "force-dynamic";
@@ -163,11 +166,33 @@ export default async function AdminBookingDetail({
                         <p className="tabular">
                           {formatCents(toCents(payment.amount), payment.currency)}
                         </p>
+                        {toCents(payment.refundedAmount ?? 0) > 0 && (
+                          <p className="text-xs text-red-800">
+                            {formatCents(toCents(payment.refundedAmount ?? 0), payment.currency)}{" "}
+                            refunded
+                          </p>
+                        )}
                         <div className="mt-1">
                           <StatusBadge status={payment.status} />
                         </div>
                       </div>
                     </div>
+
+                    {/* Refunds are finance's to make, and only against money
+                        actually collected. */}
+                    {can(user.role, "payments.record") &&
+                      refundableCents(payment) > 0 && (
+                        <RefundPanel
+                          paymentId={payment.id}
+                          refundableLabel={formatCents(
+                            refundableCents(payment),
+                            payment.currency,
+                          )}
+                          refundableAmount={(refundableCents(payment) / 100).toFixed(2)}
+                          supportsAutomatic={gatewaySupportsRefund(payment.gateway)}
+                          gatewayName={payment.gateway}
+                        />
+                      )}
 
                     {payment.events.length > 0 && (
                       <details className="mt-2">

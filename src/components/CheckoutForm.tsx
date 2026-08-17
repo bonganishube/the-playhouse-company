@@ -3,18 +3,12 @@
 import Link from "next/link";
 import { useActionState } from "react";
 import { checkoutAction, type CheckoutState } from "@/app/actions/checkout";
+import { GatewayOptions, type GatewayChoice } from "@/components/GatewayOptions";
 import { Alert, Button, Field, inputClass } from "@/components/ui";
 
 const initialState: CheckoutState = { ok: true };
 
-export type GatewayChoice = {
-  id: string;
-  name: string;
-  summary: string;
-  available: boolean;
-  unavailableReason?: string;
-  active: boolean;
-};
+export type { GatewayChoice };
 
 export function CheckoutForm({
   signedIn,
@@ -25,7 +19,13 @@ export function CheckoutForm({
 }: {
   signedIn: boolean;
   defaults: { contactName: string; contactEmail: string };
-  deposit: { percent: number; amountLabel: string; balanceLabel: string } | null;
+  deposit: {
+    percent: number;
+    /** The whole booking value, so both choices state their amount. */
+    totalLabel: string;
+    amountLabel: string;
+    balanceLabel: string;
+  } | null;
   gateways: GatewayChoice[];
   gatewayError: string | null;
 }) {
@@ -115,77 +115,58 @@ export function CheckoutForm({
               Company does not store your card details.
             </p>
 
-            {/* The providers named in the tender are listed even before their
-                merchant accounts exist, shown as unavailable rather than
-                hidden. The choice is presentational: the server decides which
-                gateway a payment goes to, so a tampered form cannot redirect a
-                customer to a provider that is not live. */}
-            <fieldset className="mt-4">
-              <legend className="sr-only">Payment method</legend>
-              <ul className="space-y-2">
-                {gateways.map((gateway) => (
-                  <li key={gateway.id}>
-                    <label
-                      className={`flex items-start gap-3 border p-3 ${
-                        gateway.available
-                          ? "cursor-pointer border-brand-600 bg-brand-50"
-                          : "cursor-not-allowed border-parchment-300 bg-parchment-100 opacity-70"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="gatewayPreference"
-                        value={gateway.id}
-                        defaultChecked={gateway.available}
-                        disabled={!gateway.available}
-                        className="mt-1 h-4 w-4 accent-[#8a1538]"
-                      />
-                      <span className="min-w-0 flex-1 text-sm">
-                        <span className="flex flex-wrap items-center gap-x-2">
-                          <span className="font-medium text-ink-900">
-                            {gateway.name}
-                          </span>
-                          {gateway.available ? (
-                            <span className="text-xs font-semibold text-green-800">
-                              Available
-                            </span>
-                          ) : (
-                            <span className="text-xs text-ink-500">
-                              {gateway.unavailableReason}
-                            </span>
-                          )}
-                        </span>
-                        <span className="mt-0.5 block text-ink-500">
-                          {gateway.summary}
-                        </span>
-                      </span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-2 text-xs text-ink-500">
-                Further providers become selectable once The Playhouse Company&apos;s
-                merchant accounts are in place.
-              </p>
-            </fieldset>
+            <div className="mt-4">
+              <GatewayOptions gateways={gateways} />
+            </div>
 
+            {/* Presented as a choice rather than an opt-in checkbox. Paying in
+                full was previously the unlabelled default and the deposit an
+                easily missed tick, so a customer entitled to pay a deposit
+                could reach the gateway owing the whole amount without ever
+                having seen the option. */}
             {deposit && (
-              <label className="mt-4 flex cursor-pointer items-start gap-3 border border-parchment-300 bg-parchment-50 p-3">
-                <input
-                  type="checkbox"
-                  name="payDeposit"
-                  className="mt-1 h-4 w-4 accent-[#8a1538]"
-                />
-                <span className="text-sm">
-                  <span className="font-medium">
-                    Pay a {deposit.percent}% deposit of {deposit.amountLabel} now
-                  </span>
-                  <span className="mt-0.5 block text-ink-500">
-                    The balance of {deposit.balanceLabel} becomes payable before the
-                    event. Our finance team will contact you to arrange settlement.
-                  </span>
-                </span>
-              </label>
+              <fieldset className="mt-4">
+                <legend className="text-sm font-medium text-ink-900">
+                  How much would you like to pay now?
+                </legend>
+                <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <label className="flex cursor-pointer items-start gap-3 border border-parchment-300 bg-white p-3 has-checked:border-brand-600 has-checked:bg-brand-50">
+                    <input
+                      type="radio"
+                      name="paymentAmount"
+                      value="full"
+                      defaultChecked
+                      className="mt-1 h-4 w-4 accent-[#8a1538]"
+                    />
+                    <span className="text-sm">
+                      <span className="font-medium text-ink-900">
+                        Pay in full, {deposit.totalLabel}
+                      </span>
+                      <span className="mt-0.5 block text-ink-500">
+                        Nothing further to settle before the event.
+                      </span>
+                    </span>
+                  </label>
+
+                  <label className="flex cursor-pointer items-start gap-3 border border-parchment-300 bg-white p-3 has-checked:border-brand-600 has-checked:bg-brand-50">
+                    <input
+                      type="radio"
+                      name="paymentAmount"
+                      value="deposit"
+                      className="mt-1 h-4 w-4 accent-[#8a1538]"
+                    />
+                    <span className="text-sm">
+                      <span className="font-medium text-ink-900">
+                        Pay a {deposit.percent}% deposit, {deposit.amountLabel}
+                      </span>
+                      <span className="mt-0.5 block text-ink-500">
+                        The balance of {deposit.balanceLabel} is payable before the
+                        event, from your booking page.
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
             )}
 
             <label className="mt-4 flex cursor-pointer items-start gap-3">
@@ -196,8 +177,15 @@ export function CheckoutForm({
                 className="mt-1 h-4 w-4 accent-[#8a1538]"
               />
               <span className="text-sm text-ink-700">
-                I accept The Playhouse Company&apos;s conditions of hire, including the
-                cancellation and refund policy.
+                I accept The Playhouse Company&apos;s{" "}
+                <Link
+                  href="/conditions-of-hire"
+                  target="_blank"
+                  className="text-brand-600 underline"
+                >
+                  conditions of hire
+                </Link>
+                , including the cancellation and refund policy.
               </span>
             </label>
           </>

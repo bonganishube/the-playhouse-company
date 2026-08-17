@@ -5,6 +5,7 @@ import { expireStalePayments, reconcileStalePayments } from "@/lib/booking";
 import { resyncPendingCalendarEvents } from "@/lib/calendar/sync";
 import { retryQueuedEmails } from "@/lib/email/mailer";
 import { env } from "@/lib/env";
+import { purgeExpiredResetTokens } from "@/lib/passwordReset";
 
 /**
  * Scheduled maintenance. Intended to run every few minutes from the platform
@@ -33,6 +34,9 @@ export async function POST(request: Request) {
   // Reconciliation runs first: a payment that actually succeeded must be
   // applied before the expiry sweep could otherwise cancel its booking.
   const paymentsReconciled = await reconcileStalePayments();
+  // Spent and long-expired reset tokens serve no purpose and are a
+  // standing liability if the database is ever exposed.
+  const resetTokensPurged = await purgeExpiredResetTokens();
 
   const [holdsReleased, bookingsExpired, calendarsSynced, mail] = await Promise.all([
     releaseExpiredHolds(),
@@ -45,6 +49,7 @@ export async function POST(request: Request) {
     ok: true,
     paymentsReconciled,
     holdsReleased,
+    resetTokensPurged,
     bookingsExpired,
     calendarsSynced,
     emailsRetried: mail.attempted,

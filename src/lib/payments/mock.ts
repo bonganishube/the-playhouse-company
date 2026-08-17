@@ -5,6 +5,8 @@ import {
   type CheckoutRequest,
   type CheckoutResult,
   type PaymentGateway,
+  type RefundRequest,
+  type RefundResult,
   type WebhookResult,
   type WebhookStatus,
 } from "./types";
@@ -79,5 +81,22 @@ export const mock: PaymentGateway = {
 
     const status = (payload.status ?? "SUCCEEDED").toUpperCase() as WebhookStatus;
     return { ...base, verified: true, status };
+  },
+
+  /**
+   * Simulated refund.
+   *
+   * No money exists to move, so this always succeeds. It is here so the whole
+   * refund path, including the ledger update and the customer's email, can be
+   * demonstrated and tested before a real merchant account exists.
+   */
+  async refund(request: RefundRequest): Promise<RefundResult> {
+    console.info(
+      `[mock] simulated refund of ${request.amountCents} cents against ${request.reference}`,
+    );
+    return {
+      ok: true,
+      gatewayRefundReference: `MOCK-REFUND-${request.idempotencyKey.slice(0, 12)}`,
+    };
   },
 };

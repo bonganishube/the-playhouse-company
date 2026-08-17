@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { CheckoutForm } from "@/components/CheckoutForm";
 import { PageHero } from "@/components/PageHero";
 import { getSession } from "@/lib/auth";
-import { findCart, getCartView } from "@/lib/cart";
+import { findCart, getCartView, groupCartLines } from "@/lib/cart";
 import { formatCents, percentOfCents } from "@/lib/money";
 import { activeGateway, gatewayCatalogue } from "@/lib/payments";
 import { prisma } from "@/lib/prisma";
@@ -20,6 +20,10 @@ export default async function CheckoutPage() {
   if (!view || view.lines.length === 0) redirect("/cart");
 
   const session = await getSession();
+
+  // Grouped the same way as the cart, so the summary a customer confirms
+  // matches the one they just reviewed.
+  const groups = groupCartLines(view.lines);
 
   // A deposit is only offered when every venue in the cart permits one.
   const venues = await prisma.venue.findMany({
@@ -58,6 +62,7 @@ export default async function CheckoutPage() {
             depositAllowed
               ? {
                   percent: depositPercent,
+                  totalLabel: formatCents(view.subtotalCents, view.currency),
                   amountLabel: formatCents(depositCents, view.currency),
                   balanceLabel: formatCents(
                     view.subtotalCents - depositCents,
@@ -76,15 +81,24 @@ export default async function CheckoutPage() {
               Your booking
             </h2>
             <div className="divide-y divide-parchment-200">
-              {view.lines.map((line) => (
-                <div key={line.id} className="px-4 py-3 text-sm">
-                  <p className="font-medium text-ink-900">{line.venueName}</p>
-                  <p className="mt-0.5 text-ink-500">
-                    {formatRange(line.startsAt, line.endsAt, line.timezone)}
+              {groups.map((group) => (
+                <div key={group.key} className="px-4 py-3 text-sm">
+                  <div className="flex justify-between gap-3">
+                    <p className="font-medium text-ink-900">{group.venueName}</p>
+                    <p className="tabular font-semibold">
+                      {formatCents(group.totalCents, group.currency)}
+                    </p>
+                  </div>
+                  <p className="mt-0.5 text-xs text-ink-500">
+                    {group.rateLabel} × {group.quantityLabel}
                   </p>
-                  <p className="mt-1 tabular text-right">
-                    {formatCents(line.lineTotalCents, line.currency)}
-                  </p>
+                  <ul className="mt-1 space-y-0.5 text-ink-500">
+                    {group.lines.map((line) => (
+                      <li key={line.id}>
+                        {formatRange(line.startsAt, line.endsAt, line.timezone)}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               ))}
             </div>

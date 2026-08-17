@@ -10,11 +10,24 @@ import { useRouter } from "next/navigation";
  * cleared client-side, so the server remains the authority on what is still
  * reserved.
  */
-export function HoldCountdown({ expiresAt }: { expiresAt: string }) {
+export function HoldCountdown({
+  expiresAt,
+  initialRemainingMs,
+}: {
+  expiresAt: string;
+  /**
+   * Milliseconds left, measured on the server that rendered the page.
+   *
+   * Deriving this from Date.now() during render instead put a different number
+   * in the server HTML and the first client render, roughly a second apart,
+   * which React reports as a hydration mismatch and repairs by throwing the
+   * tree away and re-rendering. Taking the opening figure as a prop makes both
+   * first renders identical; the interval below owns every value after that.
+   */
+  initialRemainingMs: number;
+}) {
   const router = useRouter();
-  const [remaining, setRemaining] = useState(() =>
-    Math.max(0, new Date(expiresAt).getTime() - Date.now()),
-  );
+  const [remaining, setRemaining] = useState(initialRemainingMs);
 
   useEffect(() => {
     const target = new Date(expiresAt).getTime();

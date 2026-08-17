@@ -296,3 +296,69 @@ export async function sendBookingCancelledEmail(bookingId: string) {
     bookingId,
   });
 }
+
+/**
+ * Send a password reset link.
+ *
+ * The token is passed in rather than read back from the database, because only
+ * its hash is stored and this is the single moment the plaintext exists.
+ */
+export async function sendPasswordResetEmail(
+  userId: string,
+  token: string,
+  options: { firstTime: boolean; ttlMinutes: number },
+) {
+  const user = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: { email: true, fullName: true },
+  });
+
+  const message = templates.passwordReset({
+    fullName: user.fullName,
+    url: `${env.APP_URL.replace(/\/$/, "")}/reset-password/${token}`,
+    ttlMinutes: options.ttlMinutes,
+    firstTime: options.firstTime,
+  });
+
+  return sendMail({
+    to: user.email,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
+    template: "password_reset",
+  });
+}
+
+/** Tell the customer a refund has been issued against their booking. */
+export async function sendRefundIssuedEmail(
+  paymentId: string,
+  amountCents: number,
+  reason: string,
+  manual: boolean,
+) {
+  const payment = await prisma.payment.findUniqueOrThrow({
+    where: { id: paymentId },
+    include: { booking: true },
+  });
+
+  const message = templates.refundIssued({
+    reference: payment.booking.reference,
+    contactName: payment.booking.contactName,
+    amountCents,
+    currency: payment.currency,
+    receiptNumber: payment.receiptNumber,
+    reason,
+    manual,
+    bookingUrl: `${env.APP_URL}/booking/${payment.booking.reference}`,
+  });
+
+  return sendMail({
+    to: payment.booking.contactEmail,
+    subject: message.subject,
+    html: message.html,
+    text: message.text,
+    template: "refund_issued",
+    bookingId: payment.bookingId,
+    paymentId: payment.id,
+  });
+}

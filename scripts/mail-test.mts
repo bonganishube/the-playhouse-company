@@ -132,6 +132,24 @@ function hint(message: string): string {
     );
   }
 
+  // The credentials can be perfectly good and still be refused because of
+  // where they were used from. Nodemailer prefixes this "Invalid login", which
+  // matches the credentials branch below and would send someone off to
+  // regenerate an SMTP key that was never the problem. Checked first for that
+  // reason.
+  if (m.includes("unauthorized ip") || m.includes("525")) {
+    return (
+      "  The credentials were accepted; the provider refused the IP address they\n" +
+      "  were used from.\n" +
+      (brevo
+        ? "  In Brevo, open Settings -> Security -> Authorised IPs and add your current\n" +
+          "  public IP, or switch the restriction off. Brevo also emails a link to\n" +
+          "  authorise a new address the first time it blocks one, so check your inbox.\n" +
+          "  A changing home or office IP will trip this repeatedly."
+        : "  Add this machine's public IP to the provider's allow list.")
+    );
+  }
+
   if (m.includes("535") || m.includes("invalid login") || m.includes("unrecognized authentication")) {
     return brevo
       ? "  Brevo rejected the credentials.\n" +

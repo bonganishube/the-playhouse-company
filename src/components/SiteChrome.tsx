@@ -193,6 +193,13 @@ export function SiteFooter() {
             <span aria-hidden="true" className="text-ink-900/30">
               |
             </span>
+            <Link
+              href="/conditions-of-hire"
+              className="transition-colors hover:text-red-700"
+            >
+              Conditions of Hire
+            </Link>
+            <span aria-hidden="true">|</span>
             <Link href="/terms" className="transition-colors hover:text-red-700">
               Terms of Use
             </Link>

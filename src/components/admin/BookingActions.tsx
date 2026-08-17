@@ -6,6 +6,7 @@ import {
   cancelBookingAction,
   declineCancellationAction,
   recordPaymentAction,
+  refundPaymentAction,
   rejectBookingAction,
   requestBalanceAction,
   type AdminState,
@@ -286,5 +287,93 @@ export function CancelPanel({ bookingId }: { bookingId: string }) {
         </div>
       )}
     </Card>
+  );
+}
+
+/**
+ * Issue a refund against a single payment.
+ *
+ * Kept behind a disclosure rather than sitting open on the page: sending money
+ * back is not a routine click, and the extra step makes it deliberate. The
+ * amount defaults to everything still refundable, which is the common case,
+ * but a partial refund is typed in directly.
+ */
+export function RefundPanel({
+  paymentId,
+  refundableLabel,
+  refundableAmount,
+  supportsAutomatic,
+  gatewayName,
+}: {
+  paymentId: string;
+  refundableLabel: string;
+  refundableAmount: string;
+  supportsAutomatic: boolean;
+  gatewayName: string;
+}) {
+  const [state, action, pending] = useActionState(refundPaymentAction, initial);
+
+  if (state.ok && state.message) {
+    return (
+      <div className="mt-2">
+        <Alert tone="success">{state.message}</Alert>
+      </div>
+    );
+  }
+
+  return (
+    <details className="mt-2 border border-parchment-300 bg-parchment-50 p-3">
+      <summary className="cursor-pointer text-xs font-medium text-ink-700">
+        Refund this payment
+      </summary>
+
+      <p className="mt-2 text-xs text-ink-500">
+        {supportsAutomatic
+          ? `${refundableLabel} can be refunded through ${gatewayName}.`
+          : `${gatewayName} has no refund API, so this records the refund and finance moves the money.`}
+      </p>
+
+      <form action={action} className="mt-3 space-y-3">
+        <input type="hidden" name="paymentId" value={paymentId} />
+
+        <Field label="Amount" required hint="Defaults to everything still refundable">
+          <input
+            name="amount"
+            type="number"
+            step="0.01"
+            min="0.01"
+            max={refundableAmount}
+            defaultValue={refundableAmount}
+            required
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Reason" required hint="Recorded on the payment and shown to the customer">
+          <input
+            name="reason"
+            required
+            placeholder="Booking not approved"
+            className={inputClass}
+          />
+        </Field>
+
+        {supportsAutomatic && (
+          <label className="flex cursor-pointer items-start gap-2 text-xs text-ink-700">
+            <input type="checkbox" name="manual" className="mt-0.5 h-3.5 w-3.5 accent-[#8a1538]" />
+            <span>
+              Record only. Tick if the money has already been returned another way, so the
+              provider is not asked to refund it a second time.
+            </span>
+          </label>
+        )}
+
+        {state.message && !state.ok && <Alert tone="error">{state.message}</Alert>}
+
+        <Button type="submit" variant="danger" size="sm" disabled={pending}>
+          {pending ? "Processing…" : "Issue refund"}
+        </Button>
+      </form>
+    </details>
   );
 }

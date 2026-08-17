@@ -102,6 +102,131 @@ function load() {
 
 export const env = load();
 
+/**
+ * Settings that are correct in development and dangerous in production.
+ *
+ * Each of these is a way of appearing to work while doing nothing real: taking
+ * simulated payments, diverting every customer's mail to one inbox, signing
+ * sessions with a secret published in the repository. None announces itself,
+ * and every one of them has to be noticed before go-live rather than after.
+ *
+ * Returned rather than thrown so the same list can drive a hard failure at
+ * runtime and a readable report from the preflight script.
+ */
+export type ReadinessProblem = { setting: string; detail: string };
+
+const DEV_AUTH_SECRET_MARKER = "dev-only-secret-change-me";
+
+export function productionReadinessProblems(): ReadinessProblem[] {
+  const problems: ReadinessProblem[] = [];
+
+  if (env.AUTH_SECRET.includes(DEV_AUTH_SECRET_MARKER)) {
+    problems.push({
+      setting: "AUTH_SECRET",
+      detail:
+        "still the placeholder committed to the repository. Anyone with the source " +
+        "could mint a valid session for any account, including an administrator.",
+    });
+  }
+
+  if (env.MAIL_REDIRECT_TO) {
+    problems.push({
+      setting: "MAIL_REDIRECT_TO",
+      detail:
+        `every message is diverted to ${env.MAIL_REDIRECT_TO} instead of the customer. ` +
+        "Confirmations, invoices and approval notices would reach nobody.",
+    });
+  }
+
+  if (env.PAYMENT_GATEWAY === "MOCK") {
+    problems.push({
+      setting: "PAYMENT_GATEWAY",
+      detail:
+        "set to the simulated gateway, which confirms bookings without taking any " +
+        "money. Venues would be given away.",
+    });
+  }
+
+  if (env.PAYMENT_GATEWAY === "STRIPE") {
+    problems.push({
+      setting: "PAYMENT_GATEWAY",
+      detail:
+        "Stripe is the demonstration route, not part of the tender's integration " +
+        "path. Switch to PayFast, Yoco, Paystack or iKhokha before trading.",
+    });
+  }
+
+  if (env.MAIL_TRANSPORT === "ethereal") {
+    problems.push({
+      setting: "MAIL_TRANSPORT",
+      detail:
+        "set to the preview inbox. Messages are readable at a link but never reach " +
+        "the recipient.",
+    });
+  }
+
+  if (!env.CRON_SECRET || env.CRON_SECRET === "dev-cron-secret") {
+    problems.push({
+      setting: "CRON_SECRET",
+      detail: env.CRON_SECRET
+        ? "still the development placeholder, so anyone can drive the maintenance endpoint."
+        : "not set, so the maintenance endpoint refuses every request and holds are never released.",
+    });
+  }
+
+  if (!env.VAT_REGISTRATION_NUMBER) {
+    problems.push({
+      setting: "VAT_REGISTRATION_NUMBER",
+      detail:
+        "absent. SARS requires it on a valid tax invoice, and every invoice issued " +
+        "without it is defective.",
+    });
+  }
+
+  if (env.APP_URL.startsWith("http://localhost")) {
+    problems.push({
+      setting: "APP_URL",
+      detail:
+        "points at localhost. Payment return links and webhook callbacks are built " +
+        "from it, so customers would be redirected nowhere.",
+    });
+  }
+
+  return problems;
+}
+
+/**
+ * Refuse to serve production traffic with development settings.
+ *
+ * Deliberately fatal. A warning in a log nobody reads is how a platform ends
+ * up live with a simulated payment gateway, and the cost of that is far higher
+ * than the cost of a deployment that will not start.
+ */
+export function assertProductionReady(): void {
+  if (process.env.NODE_ENV !== "production") return;
+  if (process.env.ALLOW_UNSAFE_PRODUCTION === "true") {
+    console.warn(
+      "[env] ALLOW_UNSAFE_PRODUCTION is set. Development settings are being " +
+        "permitted in a production build. This must never be used for real trading.",
+    );
+    return;
+  }
+
+  const problems = productionReadinessProblems();
+  if (problems.length === 0) return;
+
+  const detail = problems
+    .map((p) => `  - ${p.setting}: ${p.detail}`)
+    .join("\n");
+
+  throw new Error(
+    `Refusing to start: ${problems.length} setting${problems.length === 1 ? " is" : "s are"} ` +
+      `unsafe for production.\n${detail}\n\n` +
+      `Fix these, or set ALLOW_UNSAFE_PRODUCTION=true to override for a staging ` +
+      `deployment that takes no real bookings.`,
+  );
+}
+
 /** Origins permitted to embed the booking portal in an iframe. */
 export function embedAllowedOrigins(): string[] {
   return env.EMBED_ALLOWED_ORIGINS.split(",")

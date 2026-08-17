@@ -4,11 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "verify": "MAIL_TRANSPORT=none MAIL_REDIRECT_TO= tsx scripts/verify-flow.mts",
     "db:seed": "prisma db seed",
+    "db:up": "bash scripts/db-up.sh",
     "db:migrate": "prisma migrate dev",
     "verify:mail": "MAIL_TRANSPORT=none MAIL_REDIRECT_TO= SMTP_USER= SMTP_PASSWORD= tsx scripts/verify-mail.mts none && MAIL_TRANSPORT=auto SMTP_HOST=127.0.0.1 SMTP_PORT=2525 MAIL_REDIRECT_TO= SMTP_USER= SMTP_PASSWORD= tsx scripts/verify-mail.mts live && MAIL_TRANSPORT=auto SMTP_HOST=127.0.0.1 SMTP_PORT=1 MAIL_REDIRECT_TO= SMTP_USER= SMTP_PASSWORD= tsx scripts/verify-mail.mts unreachable",
     "mail:test": "tsx scripts/mail-test.mts",

@@ -22,6 +22,12 @@ export default async function SignInPage({ searchParams }: PageProps<"/signin">)
       <div className="mx-auto max-w-md px-4 py-14">
       <AuthForm mode="signin" next={next} />
       <p className="mt-4 text-sm text-ink-500">
+        <Link href="/forgot-password" className="text-brand-600 underline">
+          Forgot your password?
+        </Link>{" "}
+        Booked as a guest and never set one? Use the same link.
+      </p>
+      <p className="mt-2 text-sm text-ink-500">
         No account yet?{" "}
         <Link
           href={`/register?next=${encodeURIComponent(next)}`}

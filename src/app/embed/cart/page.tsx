@@ -30,7 +30,12 @@ export default async function EmbedCartPage() {
     <div>
       <h1 className="mb-3 text-xl">Your selection</h1>
 
-      {view.expiresAt && <HoldCountdown expiresAt={view.expiresAt.toISOString()} />}
+      {view.expiresAt && (
+        <HoldCountdown
+          expiresAt={view.expiresAt.toISOString()}
+          initialRemainingMs={view.expiresInMs}
+        />
+      )}
 
       <div className="mt-4 border border-parchment-300 bg-white">
         {view.lines.map((line) => (

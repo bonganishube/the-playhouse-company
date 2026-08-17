@@ -23,6 +23,8 @@ import { requireCapability, venueScopeFor, hashPassword } from "@/lib/auth";
 import { resendEmail } from "@/lib/email/mailer";
 import { toCents } from "@/lib/money";
 import { prisma } from "@/lib/prisma";
+import { formatCents } from "@/lib/money";
+import { refundBookingInFull, refundPayment } from "@/lib/refunds";
 import { clockToMinutes } from "@/lib/time";
 
 export type AdminState = { ok: boolean; message?: string };
@@ -79,9 +81,39 @@ export async function rejectBookingAction(
     }
     await assertVenueScope(user, bookingId);
     await rejectBooking(bookingId, user, reason);
+
+    // The rejection email tells the customer their payment will be refunded.
+    // Making that true here is the difference between a promise and a claim.
+    const refund = await refundBookingInFull(
+      bookingId,
+      `Booking not approved: ${reason}`,
+      user,
+    );
+
     revalidatePath("/admin/bookings");
     revalidatePath(`/admin/bookings/${bookingId}`);
-    return { ok: true, message: "Booking rejected and the customer notified." };
+
+    if (refund.failures.length > 0) {
+      return {
+        ok: false,
+        message:
+          `Booking rejected and the customer notified, but the refund did not go through: ` +
+          `${refund.failures.join("; ")}. Settle it from the payments panel.`,
+      };
+    }
+
+    if (refund.refundedCents === 0) {
+      return { ok: true, message: "Booking rejected and the customer notified." };
+    }
+
+    return {
+      ok: true,
+      message:
+        `Booking rejected and the customer notified. ` +
+        (refund.manualCount > 0
+          ? `${formatCents(refund.refundedCents)} recorded as refundable; this provider has no refund API, so finance must move the money.`
+          : `${formatCents(refund.refundedCents)} refunded.`),
+    };
   } catch (error) {
     return { ok: false, message: errorMessage(error) };
   }
@@ -580,4 +612,51 @@ const DAY_NAMES = [
 function errorMessage(error: unknown): string {
   if (error instanceof Error) return error.message;
   return "Something went wrong. Please try again.";
+}
+
+/**
+ * Refund a payment, in whole or in part.
+ *
+ * Finance-only. The amount is checked against what actually remains refundable
+ * on the payment rather than trusted from the form, so a stale page cannot
+ * return more than was taken.
+ */
+export async function refundPaymentAction(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  try {
+    const user = await requireCapability("payments.record");
+    const paymentId = String(formData.get("paymentId") ?? "");
+    const reason = String(formData.get("reason") ?? "").trim();
+    const manual = formData.get("manual") === "on";
+    const amount = Number(String(formData.get("amount") ?? "").replace(/[^\d.]/g, ""));
+
+    if (reason.length < 3) {
+      return { ok: false, message: "Record why the refund is being made." };
+    }
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return { ok: false, message: "Enter the amount to refund." };
+    }
+
+    const result = await refundPayment(paymentId, {
+      amountCents: Math.round(amount * 100),
+      reason,
+      actor: user,
+      manual,
+    });
+
+    if (!result.ok) return { ok: false, message: result.message };
+
+    const payment = await prisma.payment.findUnique({
+      where: { id: paymentId },
+      select: { bookingId: true },
+    });
+    revalidatePath("/admin/payments");
+    if (payment) revalidatePath(`/admin/bookings/${payment.bookingId}`);
+
+    return { ok: true, message: result.message };
+  } catch (error) {
+    return { ok: false, message: errorMessage(error) };
+  }
 }

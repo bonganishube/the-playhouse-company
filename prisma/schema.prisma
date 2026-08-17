@@ -128,13 +128,39 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  bookings      Booking[]
-  carts         Cart[]
-  managedVenues VenueManager[]
-  auditLogs     AuditLog[]
+  bookings       Booking[]
+  carts          Cart[]
+  managedVenues  VenueManager[]
+  auditLogs      AuditLog[]
+  passwordResets PasswordResetToken[]
 
   @@index([role])
   @@map("users")
+}
+
+/// Single-use token for setting a password.
+///
+/// Only a hash of the emailed token is kept, so a leaked database yields no
+/// working reset links. This is also the only route into an account created by
+/// guest checkout: those are given an unusable random password, and without a
+/// reset the customer could never sign in to view a booking or settle a
+/// balance.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  /// SHA-256 of the token that was emailed. The plaintext is never stored.
+  tokenHash String    @unique
+  expiresAt DateTime  @db.Timestamptz(3)
+  /// Set the moment it is redeemed, so a token cannot be replayed.
+  usedAt    DateTime? @db.Timestamptz(3)
+  requestIp String?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, usedAt])
+  @@index([expiresAt])
+  @@map("password_reset_tokens")
 }
 
 /// Assigns a VENUE_MANAGER to the venues they may approve bookings for.
@@ -383,6 +409,13 @@ model Booking {
   /// no money and no obligation are involved.
   cancellationRequestedAt DateTime?
   cancellationRequestReason String?  @db.Text
+
+  /// Which published version of the conditions of hire the customer accepted,
+  /// and when. Recorded on the booking rather than looked up later, because
+  /// the terms will be revised and a dispute turns on what was on screen at
+  /// the moment of purchase, not on what the current document says.
+  termsVersion    String?
+  termsAcceptedAt DateTime? @db.Timestamptz(3)
 
   confirmedAt DateTime?
   createdAt   DateTime  @default(now())

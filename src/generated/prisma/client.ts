@@ -47,6 +47,17 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model PasswordResetToken
+ * Single-use token for setting a password.
+ * 
+ * Only a hash of the emailed token is kept, so a leaked database yields no
+ * working reset links. This is also the only route into an account created by
+ * guest checkout: those are given an unusable random password, and without a
+ * reset the customer could never sign in to view a booking or settle a
+ * balance.
+ */
+export type PasswordResetToken = Prisma.PasswordResetTokenModel
+/**
  * Model VenueManager
  * Assigns a VENUE_MANAGER to the venues they may approve bookings for.
  */

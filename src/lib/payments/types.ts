@@ -85,7 +85,41 @@ export interface PaymentGateway {
    * implementations return verified: true.
    */
   reconcile?(gatewayReference: string): Promise<WebhookResult>;
+  /**
+   * Send money back to the customer.
+   *
+   * Optional, because not every provider exposes refunds to the API and some
+   * merchant accounts disable them. Where it is absent the refund is still
+   * recorded against the payment and carried out by finance through the
+   * provider's own dashboard or by transfer, so the customer's ledger is right
+   * either way. What must never happen is the booking claiming a refund the
+   * system neither made nor recorded.
+   *
+   * Implementations must be safe to call twice with the same
+   * idempotencyKey: a refund issued twice is money lost.
+   */
+  refund?(request: RefundRequest): Promise<RefundResult>;
 }
+
+export type RefundRequest = {
+  /** The provider's identifier for the original transaction. */
+  gatewayReference: string;
+  /** Our reference for the original payment. */
+  reference: string;
+  amountCents: number;
+  currency: string;
+  reason: string;
+  /** Stable per refund attempt, so a retry cannot pay twice. */
+  idempotencyKey: string;
+};
+
+export type RefundResult = {
+  ok: boolean;
+  /** The provider's identifier for the refund itself. */
+  gatewayRefundReference?: string;
+  /** Why it was refused, for the audit trail and the operator. */
+  message?: string;
+};
 
 export class GatewayError extends Error {
   constructor(

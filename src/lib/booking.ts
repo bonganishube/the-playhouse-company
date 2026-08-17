@@ -68,7 +68,7 @@ export async function createBookingFromCart(
   cartId: string,
   userId: string,
   contact: ContactDetails,
-  options: { payDeposit?: boolean } = {},
+  options: { payDeposit?: boolean; termsVersion?: string } = {},
 ): Promise<CreateBookingResult> {
   const reservations = await prisma.reservation.findMany({
     where: { cartId, status: ReservationStatus.HELD },
@@ -138,6 +138,11 @@ export async function createBookingFromCart(
           organisation: contact.organisation,
           eventTitle: contact.eventTitle,
           purpose: contact.purpose,
+          // Which wording the customer agreed to, fixed at the moment of
+          // purchase. Looking it up later would apply whatever the document
+          // says then, which is not what they accepted.
+          termsVersion: options.termsVersion ?? null,
+          termsAcceptedAt: options.termsVersion ? new Date() : null,
           currency,
           subtotal: fromCents(subtotalCents),
           total: fromCents(totalCents),
