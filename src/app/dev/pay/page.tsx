@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { MockPaymentForm } from "@/components/MockPaymentForm";
+import { mockGatewayAvailable } from "@/lib/payments/mock";
 
 export const dynamic = "force-dynamic";
 
@@ -10,10 +11,13 @@ export const metadata = { title: "Simulated payment" };
  *
  * It lets the full booking lifecycle, checkout, callback, confirmation,
  * receipt and calendar sync, be demonstrated and tested before The Playhouse
- * Company's merchant accounts are live. Unreachable in production.
+ * Company's merchant accounts are live. Reachable in production only on a
+ * deployment that has explicitly set ALLOW_UNSAFE_PRODUCTION.
  */
 export default async function DevPayPage({ searchParams }: PageProps<"/dev/pay">) {
-  if (process.env.NODE_ENV === "production") notFound();
+  // The same rule the gateway itself applies, so a deployment that is allowed
+  // to offer simulated payment can also complete one.
+  if (!mockGatewayAvailable()) notFound();
 
   const query = await searchParams;
   const reference = String(query.reference ?? "");

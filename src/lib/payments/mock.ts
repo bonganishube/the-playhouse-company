@@ -31,6 +31,24 @@ export function signMockCallback(body: string): string {
   return sign(body);
 }
 
+/**
+ * May the simulated gateway be used at all?
+ *
+ * One predicate, shared by the gateway, the payment page it redirects to and
+ * the action that issues the callback. They had drifted apart: the gateway was
+ * opened up for a hosted demonstration under ALLOW_UNSAFE_PRODUCTION while the
+ * page still refused outright whenever NODE_ENV was production. Checkout
+ * therefore offered a payment method and then sent the customer to a 404, so
+ * the very deployment the exception was made for could not take a payment.
+ *
+ * Keeping the rule in one place is the point. Three copies of "unless it is
+ * production" is how the two came to disagree in the first place.
+ */
+export function mockGatewayAvailable(): boolean {
+  if (process.env.NODE_ENV !== "production") return true;
+  return process.env.ALLOW_UNSAFE_PRODUCTION === "true";
+}
+
 export const mock: PaymentGateway = {
   id: GatewayId.MOCK,
   displayName: "Simulated payment (development)",
@@ -51,8 +69,7 @@ export const mock: PaymentGateway = {
    * with simulated payments behind it.
    */
   isConfigured() {
-    if (process.env.NODE_ENV !== "production") return true;
-    return process.env.ALLOW_UNSAFE_PRODUCTION === "true";
+    return mockGatewayAvailable();
   },
 
   async createCheckout(request: CheckoutRequest): Promise<CheckoutResult> {

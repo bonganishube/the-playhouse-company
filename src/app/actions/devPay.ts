@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { env } from "@/lib/env";
-import { signMockCallback } from "@/lib/payments/mock";
+import { mockGatewayAvailable, signMockCallback } from "@/lib/payments/mock";
 
 /**
  * Issue a signed callback from the simulated gateway.
@@ -12,8 +12,8 @@ import { signMockCallback } from "@/lib/payments/mock";
  * exactly those a live gateway exercises.
  */
 export async function simulatePaymentAction(formData: FormData): Promise<void> {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("The simulated gateway is not available in production.");
+  if (!mockGatewayAvailable()) {
+    throw new Error("The simulated gateway is not available on this deployment.");
   }
 
   const reference = String(formData.get("reference") ?? "");
