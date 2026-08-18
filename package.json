@@ -57,7 +57,8 @@
       "prisma",
       "esbuild",
       "@tailwindcss/oxide",
-      "sharp"
+      "sharp",
+      "unrs-resolver"
     ]
   }
 }
