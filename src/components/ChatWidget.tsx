@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ChatText } from "./ChatText";
 
 /**
  * The booking assistant, as a panel anchored to the corner of every page.
@@ -212,7 +213,7 @@ export function ChatWidget() {
                       : "border border-parchment-300 bg-white text-ink-900"
                   }`}
                 >
-                  {m.text}
+                  <ChatText text={m.text} tone={m.role} />
                 </p>
               </div>
             ))}

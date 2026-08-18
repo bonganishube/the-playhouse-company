@@ -84,6 +84,12 @@ function systemPrompt(now: Date, channel: string): string {
     channel === "WHATSAPP"
       ? "- This is WhatsApp. No markdown, no tables, no headings. Short paragraphs and plain hyphens for lists."
       : "- This is the website chat. Keep formatting minimal; short paragraphs, no headings.",
+    channel === "WHATSAPP"
+      ? // WhatsApp renders no markup, so a bracketed phrase would arrive as
+        // punctuation wrapped round an address nobody can read.
+        "- Put each link on its own line as a plain address. Do not bracket it or hide it behind a phrase; WhatsApp will show the markup rather than a link."
+      : // The web chat turns these into ordinary underlined links.
+        "- Write every link as [phrase](https://...). The phrase is all the customer sees, so it must say where the link goes: [pay now], [conditions of hire], [your booking], [see the Opera]. Keep it to a few words, never paste a bare address, and never put the address itself inside the brackets.",
     "",
     "WHAT YOU MUST NOT DO",
     "- Never state a price, a capacity or an availability that did not come from a tool in this conversation. If you have not looked it up, look it up.",
