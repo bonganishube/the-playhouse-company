@@ -1,6 +1,11 @@
 import { cookies } from "next/headers";
 import { ReservationStatus } from "@/generated/prisma/enums";
-import { checkSlot, bufferedBlock, releaseExpiredHolds } from "./availability";
+import {
+  OCCUPYING_STATUSES,
+  bufferedBlock,
+  checkSlot,
+  releaseExpiredHolds,
+} from "./availability";
 import { env } from "./env";
 import { toCents } from "./money";
 import { prisma, isSlotConflict } from "./prisma";
@@ -271,15 +276,53 @@ export async function addToCart(
   // cost of doing it here is negligible next to the cost of losing a booking.
   await releaseExpiredHolds();
 
-  const check = await checkSlot(venueId, startsAt, endsAt);
-  if (!check.ok) {
-    return { ok: false, message: check.message, code: check.code };
-  }
-
-  const venue = await prisma.venue.findUniqueOrThrow({
+  const venue = await prisma.venue.findUnique({
     where: { id: venueId },
     include: { rates: true },
   });
+  if (!venue) {
+    return { ok: false, code: "VENUE_INACTIVE", message: "Venue not found." };
+  }
+
+  const { blockStartsAt, blockEndsAt } = bufferedBlock(venue, startsAt, endsAt);
+
+  // Anything of the customer's own that already covers this time.
+  //
+  // Their holds are occupancy like any other, so without this the customer is
+  // told their own reservation is somebody else's booking: the assistant would
+  // hold a date, look again, and report it gone. Answering from the cart is
+  // also the only way to distinguish the two cases that matter, because the
+  // exclusion constraint cannot: asking for exactly what is already held is a
+  // repeat and should simply succeed, while asking for a different time that
+  // happens to overlap is a real clash and needs saying so plainly.
+  const mine = await prisma.reservation.findFirst({
+    where: {
+      cartId,
+      status: { in: [...OCCUPYING_STATUSES] },
+      blockStartsAt: { lt: blockEndsAt },
+      blockEndsAt: { gt: blockStartsAt },
+    },
+  });
+  if (mine) {
+    const identical =
+      mine.startsAt.getTime() === startsAt.getTime() &&
+      mine.endsAt.getTime() === endsAt.getTime();
+    if (identical) return { ok: true, reservationId: mine.id };
+    return {
+      ok: false,
+      code: "IN_YOUR_CART",
+      message:
+        "That overlaps a time already held in this cart. Remove the existing " +
+        "one first, or choose a time that does not clash with it.",
+    };
+  }
+
+  const check = await checkSlot(venueId, startsAt, endsAt, {
+    ignoreCartId: cartId,
+  });
+  if (!check.ok) {
+    return { ok: false, message: check.message, code: check.code };
+  }
 
   let priced;
   try {
@@ -292,8 +335,6 @@ export async function addToCart(
       code: "NO_RATE",
     };
   }
-
-  const { blockStartsAt, blockEndsAt } = bufferedBlock(venue, startsAt, endsAt);
 
   try {
     const reservation = await prisma.reservation.create({

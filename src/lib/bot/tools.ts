@@ -221,7 +221,7 @@ export async function runTool(
     case "list_venues":
       return listVenues(str(args, "category"));
     case "check_availability":
-      return checkAvailability(str(args, "venue_slug"), str(args, "date"));
+      return checkAvailability(str(args, "venue_slug"), str(args, "date"), ctx);
     case "add_to_cart":
       return addVenueToCart(args, ctx);
     case "view_cart":
@@ -269,7 +269,11 @@ async function listVenues(category: string): Promise<ToolResult> {
   };
 }
 
-async function checkAvailability(slug: string, date: string): Promise<ToolResult> {
+async function checkAvailability(
+  slug: string,
+  date: string,
+  ctx: ToolContext,
+): Promise<ToolResult> {
   const venue = await prisma.venue.findUnique({ where: { slug } });
   if (!venue) return { ok: false, message: `No venue with slug "${slug}".` };
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
@@ -281,7 +285,14 @@ async function checkAvailability(slug: string, date: string): Promise<ToolResult
     const end = new Date(`${from}T00:00:00Z`);
     end.setUTCMonth(end.getUTCMonth() + 1);
     end.setUTCDate(0);
-    const { days } = await getDayOptions(venue.id, from, end.toISOString().slice(0, 10));
+    const to = end.toISOString().slice(0, 10);
+    // The customer's own holds are not a clash with themselves, so they are
+    // excluded here and reported separately. Left in, this call contradicted
+    // the one that placed the hold moments earlier and the assistant told the
+    // customer their date had gone.
+    const { days } = await getDayOptions(venue.id, from, to, undefined, {
+      ignoreCartId: ctx.cartId ?? undefined,
+    });
     return {
       ok: true,
       data: {
@@ -289,13 +300,18 @@ async function checkAvailability(slug: string, date: string): Promise<ToolResult
         sold_by: "day",
         month: date.slice(0, 7),
         available_dates: days.filter((d) => d.available).map((d) => d.date),
+        // Named so the model tells the customer what it is already holding for
+        // them instead of offering it as though it were new.
+        already_held_for_this_customer: await heldByCustomer(venue.id, ctx, from, to),
       },
     };
   }
 
   // Hourly: report the free runs rather than every increment, which keeps the
   // payload small and is how a person would describe availability anyway.
-  const day = await getDayAvailability(venue.id, date);
+  const day = await getDayAvailability(venue.id, date, undefined, {
+    ignoreCartId: ctx.cartId ?? undefined,
+  });
   if (!day.isOpen) {
     return { ok: true, data: { venue: venue.name, date, closed: true } };
   }
@@ -318,8 +334,34 @@ async function checkAvailability(slug: string, date: string): Promise<ToolResult
       date,
       minimum_booking_minutes: day.minBookingMinutes,
       free_periods: free,
+      already_held_for_this_customer: await heldByCustomer(venue.id, ctx, date, date),
     },
   };
+}
+
+/** What this conversation is already holding at a venue, in plain language. */
+async function heldByCustomer(
+  venueId: string,
+  ctx: ToolContext,
+  from: string,
+  to: string,
+): Promise<string[]> {
+  if (!ctx.cartId) return [];
+  const venue = await prisma.venue.findUniqueOrThrow({
+    where: { id: venueId },
+    select: { timezone: true },
+  });
+  const held = await prisma.reservation.findMany({
+    where: {
+      cartId: ctx.cartId,
+      venueId,
+      startsAt: { lt: new Date(`${to}T23:59:59.999Z`) },
+      endsAt: { gt: new Date(`${from}T00:00:00.000Z`) },
+    },
+    orderBy: { startsAt: "asc" },
+    select: { startsAt: true, endsAt: true },
+  });
+  return held.map((h) => formatRange(h.startsAt, h.endsAt, venue.timezone));
 }
 
 /** Create the conversation's cart the first time it holds something. */
@@ -345,6 +387,10 @@ async function addVenueToCart(args: Args, ctx: ToolContext): Promise<ToolResult>
   const venue = await prisma.venue.findUnique({ where: { slug } });
   if (!venue) return { ok: false, message: `No venue with slug "${slug}".` };
 
+  // Before the availability question, not after: the answer depends on which
+  // cart is asking, since a customer's own hold must not read as a clash.
+  const cartId = await ensureCart(ctx);
+
   let startsAt: Date;
   let endsAt: Date;
 
@@ -352,7 +398,9 @@ async function addVenueToCart(args: Args, ctx: ToolContext): Promise<ToolResult>
     // The hire window for that date, taken from the same source the website
     // uses, so a day booked by chat covers exactly the hours a day booked by
     // form does.
-    const { days } = await getDayOptions(venue.id, date, date);
+    const { days } = await getDayOptions(venue.id, date, date, undefined, {
+      ignoreCartId: cartId,
+    });
     const option = days[0];
     if (!option || !option.available) {
       return {
@@ -376,7 +424,6 @@ async function addVenueToCart(args: Args, ctx: ToolContext): Promise<ToolResult>
     endsAt = localToUtc(date, mins(end), venue.timezone);
   }
 
-  const cartId = await ensureCart(ctx);
   const held = await addToCart(cartId, venue.id, startsAt, endsAt);
   if (!held.ok) return { ok: false, message: held.message };
 

@@ -84,6 +84,10 @@ export async function createBookingFromCart(
   for (const r of reservations) {
     const check = await checkSlot(r.venueId, r.startsAt, r.endsAt, {
       ignoreReservationId: r.id,
+      // The rest of this same cart is not a clash either; only somebody else's
+      // occupancy can stop the checkout. The exclusion constraint remains the
+      // authority at write time.
+      ignoreCartId: cartId,
     });
     if (!check.ok) {
       return {

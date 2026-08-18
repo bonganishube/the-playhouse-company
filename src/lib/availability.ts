@@ -24,6 +24,25 @@ export const OCCUPYING_STATUSES = [
   ReservationStatus.CONFIRMED,
 ] as const;
 
+/**
+ * Occupancy that belongs to somebody else.
+ *
+ * A customer's own cart holds are real occupancy to everyone else, but to the
+ * customer who just placed them they are simply the dates they chose. Counting
+ * them as a clash is what made the assistant tell a customer that the date
+ * they had reserved a moment earlier was no longer available, and made a
+ * second look at the calendar contradict the first.
+ *
+ * The null is spelled out rather than left to the comparison. Every confirmed
+ * or pending booking has no cart, and in SQL `cartId <> $1` is null, not true,
+ * for a null cartId; relying on the bare inequality would have quietly stopped
+ * real bookings blocking anything, which is the one failure this whole module
+ * exists to prevent.
+ */
+function excludingCart(cartId?: string) {
+  return cartId ? { OR: [{ cartId: null }, { cartId: { not: cartId } }] } : {};
+}
+
 export type VenueRules = {
   id: string;
   timezone: string;
@@ -88,7 +107,12 @@ export async function checkSlot(
   venueId: string,
   startsAt: Date,
   endsAt: Date,
-  options: { ignoreReservationId?: string; now?: Date } = {},
+  options: {
+    ignoreReservationId?: string;
+    /** Treat this cart's own holds as free, see excludingCart. */
+    ignoreCartId?: string;
+    now?: Date;
+  } = {},
 ): Promise<SlotCheck> {
   const now = options.now ?? new Date();
 
@@ -180,6 +204,7 @@ export async function checkSlot(
       ...(options.ignoreReservationId
         ? { id: { not: options.ignoreReservationId } }
         : {}),
+      ...excludingCart(options.ignoreCartId),
     },
   });
   if (conflict) {
@@ -296,6 +321,7 @@ export async function getDayAvailability(
   venueId: string,
   date: string,
   now: Date = new Date(),
+  options: { ignoreCartId?: string } = {},
 ): Promise<DayAvailability> {
   const venue = await prisma.venue.findUniqueOrThrow({
     where: { id: venueId },
@@ -332,6 +358,7 @@ export async function getDayAvailability(
         status: { in: [...OCCUPYING_STATUSES] },
         blockStartsAt: { lt: dayEnd },
         blockEndsAt: { gt: dayStart },
+        ...excludingCart(options.ignoreCartId),
       },
       select: { blockStartsAt: true, blockEndsAt: true },
     }),
@@ -416,6 +443,7 @@ export async function getDayOptions(
   from: string,
   to: string,
   now: Date = new Date(),
+  options: { ignoreCartId?: string } = {},
 ): Promise<{ timezone: string; days: DayOption[] }> {
   const venue = await prisma.venue.findUniqueOrThrow({
     where: { id: venueId },
@@ -434,6 +462,7 @@ export async function getDayOptions(
         status: { in: [...OCCUPYING_STATUSES] },
         blockStartsAt: { lt: rangeEnd },
         blockEndsAt: { gt: rangeStart },
+        ...excludingCart(options.ignoreCartId),
       },
       select: { blockStartsAt: true, blockEndsAt: true },
     }),
