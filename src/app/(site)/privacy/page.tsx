@@ -11,6 +11,12 @@ export const metadata: Metadata = { title: "Privacy notice" };
  * is explicitly marked as not yet in force: a placeholder presented as a real
  * policy would be worse than none, because a reader would believe undertakings
  * that The Playhouse Company has not actually made.
+ *
+ * The cookies section is the exception: it is not a placeholder but a
+ * description of what the running code actually sets, taken from auth.ts,
+ * cart.ts and the chat route. POPIA s18 requires the disclosure regardless of
+ * whether the rest of the notice has been approved, and a reader checking the
+ * claim against their own browser should find it true.
  */
 export default function PrivacyPage() {
   return (
@@ -63,6 +69,46 @@ export default function PrivacyPage() {
                 received.
               </li>
             </ul>
+          </section>
+
+          <section>
+            <h2 className="mb-2 text-xl text-ink-900">Cookies</h2>
+            <p className="mb-2">
+              The platform sets three cookies, all of them its own. None is used
+              for advertising, and none tracks you across other websites. All
+              three are marked <code className="text-ink-900">httpOnly</code>,
+              meaning no script running in the page can read them, and are sent
+              only over an encrypted connection.
+            </p>
+            <ul className="list-disc space-y-1 pl-5">
+              <li>
+                <span className="text-ink-900">phc_session</span> keeps you
+                signed in. It holds a signed token identifying your account,
+                lasts twelve hours, and is removed when you sign out.
+              </li>
+              <li>
+                <span className="text-ink-900">phc_cart</span> links your
+                browser to the booking you are assembling, so a basket survives
+                moving between pages and is not lost before checkout. It holds a
+                random reference rather than any personal detail, and lasts
+                thirty days.
+              </li>
+              <li>
+                <span className="text-ink-900">phc_chat</span> keeps the thread
+                of a conversation with the booking assistant, so reopening the
+                window does not lose what was already said. It is set only if
+                you send the assistant a message, and lasts seven days.
+              </li>
+            </ul>
+            <p className="mt-2">
+              Each of these is necessary to provide a service you have asked
+              for, so the platform does not ask permission to set them, and
+              there is nothing to switch off: refusing them in your browser
+              would stop you signing in or making a booking at all. Should
+              analytics or marketing cookies ever be added, they would be a
+              different matter and your consent would be sought before any were
+              set.
+            </p>
           </section>
 
           <section>
