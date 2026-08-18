@@ -29,6 +29,10 @@ export function ChatWidget() {
   const [viewport, setViewport] = useState<{ inset: number; height: number } | null>(
     null,
   );
+  /** Set when a tool reported that this address already has an account. */
+  const [signIn, setSignIn] = useState<{ email: string } | null>(null);
+  const [signInError, setSignInError] = useState<string | null>(null);
+  const [signingIn, setSigningIn] = useState(false);
 
   const launcher = useRef<HTMLButtonElement>(null);
   const input = useRef<HTMLInputElement>(null);
@@ -112,8 +116,14 @@ export function ChatWidget() {
     event.preventDefault();
     const text = draft.trim();
     if (!text || busy) return;
-
     setDraft("");
+    await sendText(text);
+  }
+
+  /** One route to the assistant, whether the customer typed it or signed in. */
+  async function sendText(text: string) {
+    if (busy) return;
+
     setMessages((m) => [...m, { role: "user", text }]);
     setBusy(true);
 
@@ -123,7 +133,13 @@ export function ChatWidget() {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ message: text }),
       });
-      const data = (await response.json()) as { reply?: string; error?: string };
+      const data = (await response.json()) as {
+        reply?: string;
+        error?: string;
+        authRequired?: { email: string } | null;
+      };
+      setSignIn(data.authRequired ?? null);
+      setSignInError(null);
       setMessages((m) => [
         ...m,
         {
@@ -148,6 +164,48 @@ export function ChatWidget() {
       // middle of a conversation wants; it is only the opening jolt that is
       // unwelcome.
       input.current?.focus();
+    }
+  }
+
+  /**
+   * Sign in without leaving the conversation.
+   *
+   * Posted straight to the endpoint, never through the chat: a password sent
+   * as a message would be stored in the transcript and replayed to the model.
+   */
+  async function submitSignIn(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (signingIn) return;
+
+    const form = new FormData(event.currentTarget);
+    setSigningIn(true);
+    setSignInError(null);
+
+    try {
+      const response = await fetch("/api/bot/signin", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email: String(form.get("email") ?? ""),
+          password: String(form.get("password") ?? ""),
+        }),
+      });
+      const data = (await response.json()) as { ok?: boolean; error?: string };
+
+      if (!response.ok || !data.ok) {
+        setSignInError(data.error ?? "Those credentials were not recognised.");
+        return;
+      }
+
+      // Saying so out loud is what carries the conversation on: the next
+      // message is what picks up the session and lets the booking proceed.
+      setSignIn(null);
+      setDraft("");
+      await sendText("I have signed in. Please carry on with the booking.");
+    } catch {
+      setSignInError("Could not reach the booking system. Please try again.");
+    } finally {
+      setSigningIn(false);
     }
   }
 
@@ -226,6 +284,77 @@ export function ChatWidget() {
               </div>
             )}
           </div>
+
+          {signIn && (
+            <form
+              onSubmit={submitSignIn}
+              className="border-t border-parchment-300 bg-parchment-100 px-3 py-3"
+            >
+              <p className="mb-1 text-sm font-medium text-ink-900">
+                Sign in to finish this booking
+              </p>
+              <p className="mb-2.5 text-xs leading-snug text-ink-500">
+                {signIn.email} already has an account. Your password goes straight to
+                the booking system, never into the chat.
+              </p>
+
+              <div className="flex flex-col gap-2">
+                <input
+                  type="email"
+                  name="email"
+                  defaultValue={signIn.email}
+                  autoComplete="username"
+                  required
+                  aria-label="Email address"
+                  className="border border-parchment-300 bg-white px-3 py-2 text-base focus:border-brand-600 focus:outline-none sm:text-sm"
+                />
+                <input
+                  type="password"
+                  name="password"
+                  autoComplete="current-password"
+                  required
+                  autoFocus
+                  placeholder="Password"
+                  aria-label="Password"
+                  className="border border-parchment-300 bg-white px-3 py-2 text-base focus:border-brand-600 focus:outline-none sm:text-sm"
+                />
+
+                {signInError && (
+                  <p role="alert" className="text-xs leading-snug text-brand-700">
+                    {signInError}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                  <button
+                    type="submit"
+                    disabled={signingIn}
+                    className="bg-brand-600 px-4 py-2 text-sm font-medium text-white disabled:opacity-40"
+                  >
+                    {signingIn ? "Signing in…" : "Sign in and continue"}
+                  </button>
+                  <a
+                    href="/forgot-password"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-brand-700 underline underline-offset-2"
+                  >
+                    Forgotten your password?
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSignIn(null);
+                      setSignInError(null);
+                    }}
+                    className="ml-auto text-xs text-ink-500 underline underline-offset-2"
+                  >
+                    Not now
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
 
           <form
             onSubmit={send}

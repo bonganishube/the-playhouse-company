@@ -58,6 +58,8 @@ export type AgentReply = {
   tokensOut: number;
   /** Set when the reply was produced without calling the model. */
   declined?: "budget" | "rate_limit" | "not_configured" | "handed_over";
+  /** A tool needs the customer signed in; the widget offers them a form. */
+  authRequired?: { email: string };
 };
 
 export function botConfigured(): boolean {
@@ -288,6 +290,7 @@ export async function respond(
   const system = systemPrompt(new Date(), conversation.channel);
 
   const toolsUsed: string[] = [];
+  let authRequired: { email: string } | undefined;
   let tokensIn = 0;
   let tokensOut = 0;
   let text = "";
@@ -332,6 +335,7 @@ export async function respond(
       }
 
       if (outcome.cartId) ctx.cartId = outcome.cartId;
+      if (outcome.authRequired) authRequired = outcome.authRequired;
 
       await prisma.botMessage.create({
         data: {
@@ -372,7 +376,7 @@ export async function respond(
     data: { lastActiveAt: new Date() },
   });
 
-  return { text, toolsUsed, tokensIn, tokensOut };
+  return { text, toolsUsed, tokensIn, tokensOut, authRequired };
 }
 
 /** Find or start the thread for this channel and identifier. */

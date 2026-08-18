@@ -104,6 +104,9 @@ export async function POST(request: Request) {
     reply: reply.text,
     toolsUsed: reply.toolsUsed,
     declined: reply.declined ?? null,
+    // Only ever an address the customer themselves gave in this conversation,
+    // so echoing it back discloses nothing they do not already know.
+    authRequired: reply.authRequired ?? null,
   });
 }
 

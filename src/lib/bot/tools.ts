@@ -44,6 +44,16 @@ export type ToolResult = {
   message?: string;
   /** Set when the conversation now owns a cart it did not before. */
   cartId?: string;
+  /**
+   * The customer must prove who they are before this can go further.
+   *
+   * Carried out of the tool and back to the widget, which shows a real sign-in
+   * form. The password is never spoken in the conversation: every message is
+   * stored and replayed to the model on the next turn, so a password typed as
+   * a message would be written to the database in plain text and handed to the
+   * model provider along with it.
+   */
+  authRequired?: { email: string };
 };
 
 const APP = env.APP_URL.replace(/\/$/, "");
@@ -513,9 +523,12 @@ async function createBooking(args: Args, ctx: ToolContext): Promise<ToolResult> 
     if (existing) {
       return {
         ok: false,
+        authRequired: { email },
         message:
-          `An account already exists for ${email}. Ask the customer to book through ` +
-          `${APP}/checkout, where they can sign in. Do not continue here.`,
+          `${email} already has an account, so the booking cannot be made until the ` +
+          `customer signs in. A sign-in box has been opened for them in the chat. ` +
+          `Ask them to sign in there, and say you will carry on the moment they have. ` +
+          `Do not ask for their password and do not accept it if they type it.`,
       };
     }
     const created = await prisma.user.create({
