@@ -84,7 +84,14 @@ export function SiteNav({
           Find a booking
         </NavLink>
         <NavLink href="/cart" active={isActivePath(pathname, "/cart")}>
-          <span className="inline-flex items-center gap-2">
+          {/* flex, not inline-flex. An inline-level flex box takes its baseline
+              from its first flex item, which here is the icon rather than any
+              text, so the line box grew to fit both that baseline and its own
+              strut. The result was a link 3.7px taller than its neighbours and,
+              because the row is centred, a label sitting ~2px above theirs.
+              Going block-level takes the span out of inline baseline alignment
+              entirely and the heights match. */}
+          <span className="flex items-center gap-2">
             <CartWithBadge count={cartCount} />
             Cart
           </span>
@@ -167,7 +174,7 @@ export function SiteNav({
               Your booking
             </p>
             <DrawerLink href="/cart">
-              <span className="inline-flex items-center gap-3">
+              <span className="flex items-center gap-3">
                 <CartWithBadge count={cartCount} />
                 Cart
               </span>
