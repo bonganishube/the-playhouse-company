@@ -322,7 +322,25 @@ export async function rebuildCheckout(bookingId: string) {
     },
     orderBy: { createdAt: "desc" },
   });
-  if (!payment) throw new Error("No payment is awaiting completion for this booking.");
+
+  // Nothing is in flight. The usual reason is that the last attempt was
+  // declined or abandoned and the customer has come back to try again, so a
+  // fresh payment is started rather than the page failing in front of them.
+  // The purpose of the previous attempt is carried over: re-presenting a
+  // deposit as a full payment would demand money the venue's own policy does
+  // not require yet.
+  if (!payment) {
+    const previous = await prisma.payment.findFirst({
+      where: { bookingId },
+      orderBy: { createdAt: "desc" },
+      select: { purpose: true },
+    });
+    const started = await initiatePayment(
+      bookingId,
+      previous?.purpose ?? PaymentPurpose.FULL,
+    );
+    return { booking, payment: started.payment, checkout: started.checkout };
+  }
 
   const gateway = getGateway(payment.gateway);
   const venueNames = booking.reservations.map((r) => r.venue.name).join(", ");

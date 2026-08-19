@@ -9,6 +9,12 @@ import { prisma } from "@/lib/prisma";
  * Triggered by the customer's own booking page when they return from the
  * payment provider. Restricted to the booking's owner (or staff) so it cannot
  * be used to probe the state of other people's bookings.
+ *
+ * The latest attempt's own status is reported alongside the booking's, because
+ * the two answer different questions. A declined card leaves the booking at
+ * PENDING_PAYMENT exactly as an undelivered webhook does, and the customer
+ * asking "did my payment go through?" is owed a straight answer rather than an
+ * indefinite "still confirming".
  */
 export async function POST(
   _request: Request,
@@ -33,7 +39,12 @@ export async function POST(
 
   // Nothing in flight, the webhook already did its work.
   if (booking.status !== "PENDING_PAYMENT") {
-    return NextResponse.json({ status: booking.status, reconciled: false });
+    return NextResponse.json({
+      status: booking.status,
+      payment: await latestPayment(booking.id),
+      reconciled: false,
+      changed: false,
+    });
   }
 
   const outcomes = await reconcileBookingPayments(booking.id);
@@ -45,7 +56,19 @@ export async function POST(
 
   return NextResponse.json({
     status: updated.status,
+    payment: await latestPayment(booking.id),
     reconciled: outcomes.some((o) => o.handled),
     changed: updated.status !== booking.status,
   });
+}
+
+/** The attempt the customer has just come back from, if there is one. */
+async function latestPayment(bookingId: string) {
+  const payment = await prisma.payment.findFirst({
+    where: { bookingId },
+    orderBy: { createdAt: "desc" },
+    select: { status: true, failureReason: true },
+  });
+  if (!payment) return null;
+  return { status: payment.status, failureReason: payment.failureReason };
 }

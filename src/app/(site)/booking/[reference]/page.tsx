@@ -49,6 +49,18 @@ export default async function BookingPage({
   const dueNowCents = toCents(booking.amountDue) - paidCents;
   const isLive = !["CANCELLED", "REJECTED", "COMPLETED"].includes(booking.status);
 
+  // The attempt the customer has just come back from. Payments are ordered
+  // newest first above, so the first row is the most recent attempt.
+  //
+  // Whether the money went through is a different question to what state the
+  // booking is in, and the customer wants the first one answered. A declined
+  // card leaves the booking at PENDING_PAYMENT exactly as a webhook still in
+  // flight does, so the booking's status alone cannot tell them apart.
+  const latestPayment = booking.payments[0] ?? null;
+  const attemptFailed =
+    booking.status === "PENDING_PAYMENT" &&
+    (latestPayment?.status === "FAILED" || latestPayment?.status === "CANCELLED");
+
   // Same provider list the customer saw at checkout, so settling a balance
   // offers the same choice rather than silently using whichever gateway took
   // the deposit.
@@ -65,17 +77,47 @@ export default async function BookingPage({
       <PageHero eyebrow="Booking reference" title={booking.reference} />
 
       <div className="mx-auto max-w-3xl px-4 py-10">
-      {query.payment === "return" && booking.status === "PENDING_PAYMENT" && (
+      {/* Shown on any visit rather than only the one straight back from the
+          gateway, so refreshing the page does not hide the fact that the
+          payment failed. */}
+      {attemptFailed && (
         <div className="mb-6">
-          <Alert tone="info" title="Confirming your payment">
-            We are confirming your payment with the provider. This page updates
-            automatically as soon as it settles.
-            <PaymentReconciler reference={booking.reference} />
+          <Alert tone="error" title="Your payment did not go through">
+            {latestPayment?.status === "CANCELLED"
+              ? "The payment was cancelled before it completed, so you have not been charged."
+              : "The payment was declined by the provider, so you have not been charged."}
+            {latestPayment?.failureReason ? ` ${latestPayment.failureReason}` : ""} Your
+            dates are held for a short period and you can try again below.
           </Alert>
         </div>
       )}
 
-      {query.payment === "cancelled" && (
+      {query.payment === "return" && latestPayment?.status === "SUCCEEDED" && (
+        <div className="mb-6">
+          <Alert tone="success" title="Payment received">
+            We have received{" "}
+            {formatCents(toCents(latestPayment.amount), latestPayment.currency)}
+            {latestPayment.receiptNumber
+              ? `, receipt ${latestPayment.receiptNumber}`
+              : ""}
+            . A receipt has been emailed to {booking.contactEmail}.
+          </Alert>
+        </div>
+      )}
+
+      {query.payment === "return" &&
+        booking.status === "PENDING_PAYMENT" &&
+        !attemptFailed && (
+          <div className="mb-6">
+            <Alert tone="info" title="Confirming your payment">
+              We are confirming your payment with the provider. This page updates
+              automatically as soon as we know the outcome.
+              <PaymentReconciler reference={booking.reference} />
+            </Alert>
+          </div>
+        )}
+
+      {query.payment === "cancelled" && !attemptFailed && (
         <div className="mb-6">
           <Alert tone="warning" title="Payment not completed">
             Your booking is being held for a short period. You may complete payment
