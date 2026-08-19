@@ -3,14 +3,16 @@ import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/AuthForm";
 import { PageHero } from "@/components/PageHero";
-import { getSession } from "@/lib/auth";
+import { getVerifiedSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = { title: "Create an account" };
 
 export default async function RegisterPage({ searchParams }: PageProps<"/register">) {
-  const session = await getSession();
+  // Verified for the same reason as the sign-in page: a token naming a deleted
+  // account must not redirect someone away from the only form that can fix it.
+  const session = await getVerifiedSession();
   const query = await searchParams;
   const next = typeof query.next === "string" ? query.next : "/";
 

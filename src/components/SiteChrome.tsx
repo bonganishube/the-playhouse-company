@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ReservationStatus } from "@/generated/prisma/enums";
-import { getSession, isStaffRole } from "@/lib/auth";
+import { getVerifiedSession, isStaffRole } from "@/lib/auth";
 import { findCart } from "@/lib/cart";
 import { prisma } from "@/lib/prisma";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/venueCategories";
@@ -36,7 +36,11 @@ async function cartCount(): Promise<number> {
  * shell that needs state for the small-screen drawer.
  */
 export async function SiteHeader() {
-  const [session, count] = await Promise.all([getSession(), cartCount()]);
+  // Verified, so the header cannot greet someone by name whose account no
+  // longer exists while every page they click refuses them. The extra lookup
+  // is a single primary-key read, run alongside the cart count that was
+  // already happening here.
+  const [session, count] = await Promise.all([getVerifiedSession(), cartCount()]);
 
   return (
     <header className="header-gradient absolute inset-x-0 top-0 z-50 no-print">

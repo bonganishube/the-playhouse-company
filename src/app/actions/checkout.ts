@@ -13,7 +13,15 @@ import { prisma } from "@/lib/prisma";
 import { CURRENT_TERMS_VERSION } from "@/lib/terms";
 import { randomBytes } from "node:crypto";
 
-export type CheckoutState = { ok: boolean; message?: string };
+export type CheckoutState = {
+  ok: boolean;
+  message?: string;
+  /**
+   * Set when the only thing standing between the customer and their booking is
+   * a sign-in, so the form can offer it in place of the message alone.
+   */
+  signIn?: { email: string };
+};
 
 const schema = z.object({
   contactName: z.string().min(2, "Enter the name of the person making the booking."),
@@ -88,10 +96,15 @@ export async function checkoutAction(
       }
       // An existing account is never silently signed into from a guest form.
       // That would let anyone assume it by typing the address.
+      //
+      // The address is handed back so the form can offer a sign-in that
+      // returns here with the cart intact. Telling someone to sign in and
+      // leaving them to find their own way there loses the checkout they had
+      // already filled in.
       return {
         ok: false,
-        message:
-          "An account already exists for that email address. Please sign in to continue.",
+        message: "An account already exists for that email address.",
+        signIn: { email: parsed.data.contactEmail },
       };
     }
 

@@ -2,11 +2,13 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CancelBooking, PayBalance } from "@/components/BookingActions";
 import { PageHero } from "@/components/PageHero";
+import { PaymentOutcome } from "@/components/PaymentOutcome";
 import { PaymentReconciler } from "@/components/PaymentReconciler";
 import { Alert, ButtonLink, Card, DetailRow, StatusBadge } from "@/components/ui";
 import { getSession, isStaffRole } from "@/lib/auth";
 import { formatCents, toCents } from "@/lib/money";
 import { activeGateway, gatewayCatalogue } from "@/lib/payments";
+import { OUTCOME_TOKEN_PARAM, tokenMatchesAnyPayment } from "@/lib/paymentAccess";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, formatRange } from "@/lib/time";
 
@@ -39,7 +41,23 @@ export default async function BookingPage({
   const session = await getSession();
   const permitted =
     session && (session.id === booking.userId || isStaffRole(session.role));
-  if (!permitted) {
+
+  // A customer coming back from the payment provider often has no session at
+  // all, and being asked to sign in before being told whether their card was
+  // charged is not an acceptable answer. The return URL carries proof of the
+  // payment, which earns them the outcome of that payment and nothing more.
+  const presented =
+    typeof query[OUTCOME_TOKEN_PARAM] === "string"
+      ? query[OUTCOME_TOKEN_PARAM]
+      : undefined;
+  const bearer =
+    !permitted &&
+    tokenMatchesAnyPayment(
+      presented,
+      booking.payments.map((p) => p.reference),
+    );
+
+  if (!permitted && !bearer) {
     redirect(`/signin?next=${encodeURIComponent(`/booking/${reference}`)}`);
   }
 
@@ -60,6 +78,27 @@ export default async function BookingPage({
   const attemptFailed =
     booking.status === "PENDING_PAYMENT" &&
     (latestPayment?.status === "FAILED" || latestPayment?.status === "CANCELLED");
+
+  if (bearer) {
+    return (
+      <PaymentOutcome
+        bookingReference={booking.reference}
+        payment={
+          latestPayment && {
+            status: latestPayment.status,
+            amountCents: toCents(latestPayment.amount),
+            currency: latestPayment.currency,
+            receiptNumber: latestPayment.receiptNumber,
+            failureReason: latestPayment.failureReason,
+            at: latestPayment.paidAt ?? latestPayment.createdAt,
+          }
+        }
+        outstandingCents={outstandingCents}
+        bookingCurrency={booking.currency}
+        token={presented!}
+      />
+    );
+  }
 
   // Same provider list the customer saw at checkout, so settling a balance
   // offers the same choice rather than silently using whichever gateway took

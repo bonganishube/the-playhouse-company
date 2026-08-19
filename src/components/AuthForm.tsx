@@ -13,9 +13,12 @@ const initialState: AuthState = { ok: true };
 export function AuthForm({
   mode,
   next,
+  email,
 }: {
   mode: "signin" | "register";
   next: string;
+  /** Prefilled when we already know it, e.g. sent here from checkout. */
+  email?: string;
 }) {
   const action = mode === "signin" ? signInAction : registerAction;
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -42,6 +45,7 @@ export function AuthForm({
         <input
           type="email"
           name="email"
+          defaultValue={email}
           required
           autoComplete="email"
           className={inputClass}

@@ -1,6 +1,8 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { PageHero } from "@/components/PageHero";
+import { getSession, isStaffRole } from "@/lib/auth";
 import { rebuildCheckout } from "@/lib/booking";
+import { OUTCOME_TOKEN_PARAM, tokenMatchesAnyPayment } from "@/lib/paymentAccess";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -16,14 +18,39 @@ export const metadata = { title: "Redirecting to payment" };
  */
 export default async function CheckoutRedirectPage({
   params,
+  searchParams,
 }: PageProps<"/checkout/redirect/[reference]">) {
   const { reference } = await params;
+  const query = await searchParams;
 
   const booking = await prisma.booking.findUnique({
     where: { reference },
-    select: { id: true },
+    select: {
+      id: true,
+      userId: true,
+      payments: { select: { reference: true } },
+    },
   });
   if (!booking) notFound();
+
+  // This page starts a payment where none is in flight, so it cannot be left
+  // open to anyone who guesses a booking reference. The customer's own session
+  // authorises it, and so does the proof carried back from the payment
+  // provider, which is what a guest retrying a declined card will be holding.
+  const session = await getSession();
+  const presented =
+    typeof query[OUTCOME_TOKEN_PARAM] === "string"
+      ? query[OUTCOME_TOKEN_PARAM]
+      : undefined;
+  const permitted =
+    (session && (session.id === booking.userId || isStaffRole(session.role))) ||
+    tokenMatchesAnyPayment(
+      presented,
+      booking.payments.map((p) => p.reference),
+    );
+  if (!permitted) {
+    redirect(`/signin?next=${encodeURIComponent(`/booking/${reference}`)}`);
+  }
 
   const { checkout } = await rebuildCheckout(booking.id);
 

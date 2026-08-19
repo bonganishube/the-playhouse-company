@@ -31,7 +31,18 @@ const DECIDED = ["SUCCEEDED", "FAILED", "CANCELLED", "REFUNDED"];
  * Safe to run alongside the webhook: settlement is idempotent, so whichever
  * arrives first confirms the booking and the other is acknowledged.
  */
-export function PaymentReconciler({ reference }: { reference: string }) {
+export function PaymentReconciler({
+  reference,
+  token,
+}: {
+  reference: string;
+  /**
+   * Proof of the payment, for a customer with no session. Without it the
+   * endpoint would refuse the poll and the page would never resolve for the
+   * very people who most need an answer.
+   */
+  token?: string;
+}) {
   const router = useRouter();
   const [attempts, setAttempts] = useState(0);
   const [settled, setSettled] = useState(false);
@@ -48,9 +59,11 @@ export function PaymentReconciler({ reference }: { reference: string }) {
       running.current = true;
 
       try {
-        const response = await fetch(`/api/payments/reconcile/${reference}`, {
-          method: "POST",
-        });
+        const query = token ? `?t=${encodeURIComponent(token)}` : "";
+        const response = await fetch(
+          `/api/payments/reconcile/${reference}${query}`,
+          { method: "POST" },
+        );
         if (response.ok) {
           const data = (await response.json()) as ReconcileResponse;
           const decided =
@@ -72,7 +85,7 @@ export function PaymentReconciler({ reference }: { reference: string }) {
     }, delay);
 
     return () => clearTimeout(timer);
-  }, [attempts, settled, reference, router]);
+  }, [attempts, settled, reference, token, router]);
 
   if (settled) return null;
 

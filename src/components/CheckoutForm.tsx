@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useActionState } from "react";
 import { checkoutAction, type CheckoutState } from "@/app/actions/checkout";
 import { GatewayOptions, type GatewayChoice } from "@/components/GatewayOptions";
-import { Alert, Button, Field, inputClass } from "@/components/ui";
+import { Alert, Button, ButtonLink, Field, inputClass } from "@/components/ui";
 
 const initialState: CheckoutState = { ok: true };
 
@@ -56,15 +56,28 @@ export function CheckoutForm({
               className={inputClass}
             />
           </Field>
-          <Field label="Email address" required>
+          {/* Prefilled from the account but editable, because the person
+              paying is often not the contact for the event: front-of-house
+              staff take bookings on a customer's behalf, and an organisation
+              books with its events manager as the contact. The booking stays
+              owned by the signed-in account either way, so nothing about
+              access depends on this address. */}
+          <Field
+            label="Email address"
+            required
+            hint={
+              signedIn
+                ? "Where the confirmation and receipt are sent. Change it if you are booking for someone else."
+                : undefined
+            }
+          >
             <input
               type="email"
               name="contactEmail"
               defaultValue={defaults.contactEmail}
               required
-              readOnly={signedIn}
               autoComplete="email"
-              className={`${inputClass} ${signedIn ? "bg-parchment-100" : ""}`}
+              className={inputClass}
             />
           </Field>
           <Field label="Telephone" required>
@@ -192,7 +205,30 @@ export function CheckoutForm({
         )}
       </fieldset>
 
-      {state.message && !state.ok && <Alert tone="error">{state.message}</Alert>}
+      {state.message && !state.ok && (
+        <Alert tone="error">
+          {state.message}
+          {/* Offered right here rather than left to the customer to find. They
+              are at the bottom of a filled-in checkout, and the cart survives
+              signing in, so this returns them to this page ready to pay. */}
+          {state.signIn && (
+            <div className="mt-3">
+              <p className="mb-2">
+                Sign in and we will bring you straight back here with your cart
+                and details intact.
+              </p>
+              <ButtonLink
+                href={`/signin?next=%2Fcheckout&email=${encodeURIComponent(
+                  state.signIn.email,
+                )}`}
+                size="sm"
+              >
+                Sign in to continue
+              </ButtonLink>
+            </div>
+          )}
+        </Alert>
+      )}
 
       <Button type="submit" disabled={pending || Boolean(gatewayError)} className="w-full sm:w-auto">
         {pending ? "Creating your booking…" : "Confirm and pay"}

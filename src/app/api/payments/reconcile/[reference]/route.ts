@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { reconcileBookingPayments } from "@/lib/booking";
 import { getSession, isStaffRole } from "@/lib/auth";
+import { OUTCOME_TOKEN_PARAM, tokenMatchesAnyPayment } from "@/lib/paymentAccess";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -17,22 +18,36 @@ import { prisma } from "@/lib/prisma";
  * indefinite "still confirming".
  */
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ reference: string }> },
 ) {
   const { reference } = await params;
 
   const booking = await prisma.booking.findUnique({
     where: { reference },
-    select: { id: true, userId: true, status: true },
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      payments: { select: { reference: true } },
+    },
   });
   if (!booking) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
   const session = await getSession();
+  // The proof carried in the return URL authorises this poll as well as the
+  // page that makes it. A customer with no session is exactly the one whose
+  // payment is still unresolved on screen.
+  const presented =
+    new URL(request.url).searchParams.get(OUTCOME_TOKEN_PARAM) ?? undefined;
   const permitted =
-    session && (session.id === booking.userId || isStaffRole(session.role));
+    (session && (session.id === booking.userId || isStaffRole(session.role))) ||
+    tokenMatchesAnyPayment(
+      presented,
+      booking.payments.map((p) => p.reference),
+    );
   if (!permitted) {
     return NextResponse.json({ error: "Not permitted" }, { status: 403 });
   }

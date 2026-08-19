@@ -18,6 +18,7 @@ import {
 } from "./money";
 import { getGateway } from "./payments";
 import type { WebhookResult } from "./payments";
+import { OUTCOME_TOKEN_PARAM, paymentOutcomeToken } from "./paymentAccess";
 import { isSlotConflict, prisma } from "./prisma";
 import {
   nextBookingReference,
@@ -207,6 +208,25 @@ export async function createBookingFromCart(
 // Payment initiation
 // ---------------------------------------------------------------------------
 
+/**
+ * Where the provider sends the customer back to.
+ *
+ * Both URLs carry proof of this payment so the outcome is visible to whoever
+ * just made it, session or no session. Guests never set a password, and a
+ * payment completed on another device lands in a browser that never held the
+ * cookie; neither of them should be met with a sign-in form when all they want
+ * to know is whether their money moved. See src/lib/paymentAccess.ts for what
+ * the proof does and does not unlock.
+ */
+function customerReturnUrls(bookingReference: string, paymentReference: string) {
+  const base = `${env.APP_URL}/booking/${bookingReference}`;
+  const proof = `${OUTCOME_TOKEN_PARAM}=${paymentOutcomeToken(paymentReference)}`;
+  return {
+    returnUrl: `${base}?payment=return&${proof}`,
+    cancelUrl: `${base}?payment=cancelled&${proof}`,
+  };
+}
+
 export async function initiatePayment(
   bookingId: string,
   purpose: PaymentPurpose = PaymentPurpose.FULL,
@@ -268,8 +288,7 @@ export async function initiatePayment(
     bookingReference: booking.reference,
     customerName: booking.contactName,
     customerEmail: booking.contactEmail,
-    returnUrl: `${env.APP_URL}/booking/${booking.reference}?payment=return`,
-    cancelUrl: `${env.APP_URL}/booking/${booking.reference}?payment=cancelled`,
+    ...customerReturnUrls(booking.reference, reference),
     notifyUrl: `${env.APP_URL}/api/payments/webhook/${gatewayId.toLowerCase()}`,
   });
 
@@ -353,8 +372,7 @@ export async function rebuildCheckout(bookingId: string) {
     bookingReference: booking.reference,
     customerName: booking.contactName,
     customerEmail: booking.contactEmail,
-    returnUrl: `${env.APP_URL}/booking/${booking.reference}?payment=return`,
-    cancelUrl: `${env.APP_URL}/booking/${booking.reference}?payment=cancelled`,
+    ...customerReturnUrls(booking.reference, payment.reference),
     notifyUrl: `${env.APP_URL}/api/payments/webhook/${payment.gateway.toLowerCase()}`,
   });
 
